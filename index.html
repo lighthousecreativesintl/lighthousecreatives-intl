@@ -1104,6 +1104,9 @@
                         <div class="flex flex-wrap items-center gap-2.5">
                             <input type="text" id="admin-reg-search" oninput="renderAdminRegistrations()" placeholder="Search student name or email..."
                                 class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-56">
+                            <button type="button" onclick="forceRefreshAdminRecords()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-brand-indigo border border-indigo-200 hover:bg-indigo-100">
+                                Refresh Records
+                            </button>
                             <button onclick="exportRegistrationsCSV()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100">
                                 Export CSV
                             </button>
@@ -1266,8 +1269,9 @@
 
                     <div class="grid sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Official Email</label>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Official & Notification Email</label>
                             <input type="email" id="edit-footer-email" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
+                            <p class="text-[11px] text-slate-400 mt-1">Receives automatic alerts when visitors open the site or register.</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Phone Numbers (comma-separated)</label>
@@ -1586,6 +1590,50 @@
                         </label>
                     </div>
                 </div>
+
+                <!-- Admin Email Notification Settings & Live Activity Log -->
+                <div class="md:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-brand-cyan">Connected Admin Mail Alerts</span>
+                            <h3 class="font-display font-bold text-lg text-slate-900">Visitor & Registration Email Notifications</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Connected Administrator Email: <strong id="admin-connected-email-display" class="text-brand-indigo">info@lighthousecreatives.org</strong>
+                                (Change this anytime under Tab 3: About Us, Team & Socials).
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <button type="button" onclick="sendTestAdminNotification()" class="px-4 py-2 rounded-xl text-xs font-bold bg-prism-gradient text-white shadow-sm hover:opacity-95">
+                                Send Test Alert Email
+                            </button>
+                            <button type="button" onclick="clearAdminActivityLogs()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">
+                                Clear Log
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <label class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer">
+                            <div>
+                                <span class="font-display font-bold text-xs text-slate-900 block">Notify Admin on Website Visit</span>
+                                <span class="text-[11px] text-slate-500">Sends an email alert when a visitor opens the portal.</span>
+                            </div>
+                            <input type="checkbox" id="toggle-notify-visit" onchange="toggleAdminNotificationPref('notifyOnVisit', this.checked)" class="w-4 h-4 accent-brand-indigo">
+                        </label>
+                        <label class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer">
+                            <div>
+                                <span class="font-display font-bold text-xs text-slate-900 block">Notify Admin on New Student Registration</span>
+                                <span class="text-[11px] text-slate-500">Sends student name, email, course & payment ref immediately.</span>
+                            </div>
+                            <input type="checkbox" id="toggle-notify-reg" onchange="toggleAdminNotificationPref('notifyOnRegistration', this.checked)" class="w-4 h-4 accent-brand-indigo">
+                        </label>
+                    </div>
+
+                    <div>
+                        <h4 class="font-display font-bold text-xs uppercase tracking-wider text-slate-500 mb-3">Recent Visitor & Registration Notification Log</h4>
+                        <div id="admin-notification-logs-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1597,11 +1645,17 @@
         const STORAGE_KEY = 'lhci_training_portal_state_v4';
         const STUDENT_SESSION_KEY = 'lhci_active_student_email';
         const ADMIN_SESSION_KEY = 'lhci_admin_logged_in';
+        const VISITOR_PING_SESSION_KEY = 'lhci_visitor_notified_session';
         const CLOUD_SYNC_URL = 'https://kvdb.io/A2k9LmP7xQ4nR8vW3zB6cJ/lhci_portal_live_v1';
         let lastLocalSaveTs = 0;
 
         const defaultData = {
             adminPasscode: 'LHCI2026',
+            notificationSettings: {
+                notifyOnVisit: true,
+                notifyOnRegistration: true
+            },
+            activityLogs: [],
             siteContent: {
                 orgName: 'LIGHT HOUSE CREATIVES INTERNATIONAL',
                 orgSubtitle: 'Training & Certification Portal',
@@ -1836,6 +1890,150 @@
         if (!Array.isArray(appState.testimonies)) {
             appState.testimonies = structuredClone(defaultData.testimonies);
         }
+        if (!appState.notificationSettings) {
+            appState.notificationSettings = { notifyOnVisit: true, notifyOnRegistration: true };
+        }
+        if (!Array.isArray(appState.activityLogs)) {
+            appState.activityLogs = [];
+        }
+
+        function getAdminEmail() {
+            return (appState.footerContent?.email || defaultData.footerContent.email || 'info@lighthousecreatives.org').trim();
+        }
+
+        async function notifyAdminViaEmail(eventType, subjectLine, detailsObj) {
+            const adminEmail = getAdminEmail();
+            const timestamp = new Date().toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            if (!Array.isArray(appState.activityLogs)) appState.activityLogs = [];
+            appState.activityLogs.unshift({
+                id: 'log-' + Date.now(),
+                type: eventType,
+                subject: subjectLine,
+                adminEmail,
+                timestamp,
+                details: Object.entries(detailsObj).map(([k, v]) => `${k}: ${v}`).join(' | ')
+            });
+            if (appState.activityLogs.length > 50) {
+                appState.activityLogs = appState.activityLogs.slice(0, 50);
+            }
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {}
+
+            if (!adminEmail || !adminEmail.includes('@')) return;
+
+            try {
+                await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(adminEmail)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        _subject: subjectLine,
+                        _template: 'table',
+                        _captcha: 'false',
+                        Organisation: appState.siteContent?.orgName || 'LIGHT HOUSE CREATIVES INTERNATIONAL',
+                        Event: eventType,
+                        Timestamp: timestamp,
+                        ...detailsObj
+                    })
+                });
+            } catch (e) {
+                console.warn('Admin email dispatch queued/offline:', e);
+            }
+        }
+
+        function trackVisitorArrival() {
+            if (isAdminAuthenticated) return;
+            if (sessionStorage.getItem(VISITOR_PING_SESSION_KEY)) return;
+            sessionStorage.setItem(VISITOR_PING_SESSION_KEY, 'true');
+
+            const prefs = appState.notificationSettings || { notifyOnVisit: true };
+            if (!prefs.notifyOnVisit) return;
+
+            const deviceInfo = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'Mobile / Tablet' : 'Desktop / Laptop';
+            const pageUrl = window.location.href;
+            const referrer = document.referrer || 'Direct Link';
+
+            notifyAdminViaEmail(
+                'Website Visitor',
+                `[LHCI Alert] New Visitor on Training Portal`,
+                {
+                    Device: deviceInfo,
+                    Page_Visited: pageUrl,
+                    Referrer: referrer,
+                    Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown'
+                }
+            );
+        }
+
+        function toggleAdminNotificationPref(key, enabled) {
+            if (!appState.notificationSettings) {
+                appState.notificationSettings = { notifyOnVisit: true, notifyOnRegistration: true };
+            }
+            appState.notificationSettings[key] = enabled;
+            saveState();
+            showToast('Admin email notification preference saved.', 'success');
+        }
+
+        async function sendTestAdminNotification() {
+            const adminEmail = getAdminEmail();
+            await notifyAdminViaEmail(
+                'Test Notification',
+                `[LHCI Test] Connected Admin Email Alert Verified`,
+                {
+                    Status: 'Connected & Active',
+                    Recipient: adminEmail,
+                    Message: 'Your LIGHT HOUSE CREATIVES INTERNATIONAL portal is successfully connected to receive visitor and registration alerts.'
+                }
+            );
+            renderAdminNotificationLogs();
+            showToast(`Test notification sent to ${adminEmail}! (Check inbox/spam on first activation)`, 'success');
+        }
+
+        function clearAdminActivityLogs() {
+            appState.activityLogs = [];
+            saveState();
+            showToast('Notification activity log cleared.', 'info');
+        }
+
+        function renderAdminNotificationLogs() {
+            const emailDisplay = document.getElementById('admin-connected-email-display');
+            if (emailDisplay) emailDisplay.textContent = getAdminEmail();
+
+            const visitToggle = document.getElementById('toggle-notify-visit');
+            const regToggle = document.getElementById('toggle-notify-reg');
+            if (visitToggle) visitToggle.checked = appState.notificationSettings?.notifyOnVisit !== false;
+            if (regToggle) regToggle.checked = appState.notificationSettings?.notifyOnRegistration !== false;
+
+            const listEl = document.getElementById('admin-notification-logs-list');
+            if (!listEl) return;
+            const logs = appState.activityLogs || [];
+            if (logs.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 p-3 rounded-xl bg-slate-50">No visitor or registration alerts logged yet.</p>`;
+                return;
+            }
+            listEl.innerHTML = logs.map(log => `
+                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${log.type === 'New Registration' ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-brand-indigo'}">${log.type}</span>
+                            <span class="font-bold text-slate-900">${log.subject}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-600 mt-1">${log.details}</p>
+                    </div>
+                    <span class="text-[11px] text-slate-400 shrink-0">${log.timestamp}</span>
+                </div>
+            `).join('');
+        }
 
         function saveState() {
             lastLocalSaveTs = Date.now();
@@ -1843,10 +2041,38 @@
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
             } catch (e) {
-                showToast('Storage warning: uploaded file may be too large for browser cache.', 'error');
+                console.warn('LocalStorage quota warning:', e);
+                showToast('Browser storage full — please use smaller image files (<500KB).', 'error');
             }
             pushStateToCloud();
             refreshAllViews();
+        }
+
+        function compressImageDataUrl(file, maxWidth = 900, quality = 0.72) {
+            return new Promise((resolve) => {
+                if (!file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const scale = Math.min(1, maxWidth / img.width);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.round(img.width * scale);
+                        canvas.height = Math.round(img.height * scale);
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = () => resolve(ev.target.result);
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
         async function pushStateToCloud() {
@@ -1857,6 +2083,83 @@
                     body: JSON.stringify(appState)
                 });
             } catch (e) {}
+        }
+
+        async function pullStateFromCloud(force = false) {
+            if (!force && Date.now() - lastLocalSaveTs < 10000) return;
+            try {
+                const res = await fetch(CLOUD_SYNC_URL + '?t=' + Date.now());
+                if (!res.ok) return;
+                const remote = await res.json();
+                if (remote && Array.isArray(remote.programs) && Array.isArray(remote.registrations)) {
+                    if (!force && Date.now() - lastLocalSaveTs < 10000) return;
+                    if (remote.programs.length > 2) remote.programs = remote.programs.slice(0, 2);
+
+                    // Merge local & remote registrations by ID so newly submitted local students are never lost
+                    const mergedMap = new Map();
+                    remote.registrations.forEach(r => mergedMap.set(r.id, r));
+                    (appState.registrations || []).forEach(localReg => {
+                        if (!mergedMap.has(localReg.id)) {
+                            mergedMap.set(localReg.id, localReg);
+                        }
+                    });
+                    remote.registrations = Array.from(mergedMap.values());
+
+                    window.appState = remote;
+                    appState = window.appState;
+                    try {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+                    } catch (e) {}
+                    refreshAllViews();
+                }
+            } catch (e) {}
+        }
+
+        async function forceRefreshAdminRecords() {
+            await pullStateFromCloud(true);
+            renderAdminDashboard();
+            showToast('Admin records synced and refreshed!', 'success');
+        }
+        async function handleRegAvatarFileChange(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            pendingRegAvatarData = await compressImageDataUrl(file, 400, 0.75);
+            const lbl = document.getElementById('portal-avatar-filename');
+            if (lbl) lbl.textContent = `Selected: ${file.name}`;
+        }
+
+        async function handleReceiptFileChange(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.type === 'application/pdf' && file.size > 750 * 1024) {
+                showToast('PDF receipts must be under 750KB (or upload a screenshot/photo instead).', 'error');
+                e.target.value = '';
+                return;
+            }
+            const compressedUrl = await compressImageDataUrl(file, 900, 0.72);
+            pendingReceiptData = {
+                name: file.name,
+                type: file.type,
+                dataUrl: compressedUrl
+            };
+            document.getElementById('portal-receipt-filename').textContent = `Selected: ${file.name}`;
+        }
+        async function handleStudentAvatarUpload(e) {
+            const file = e.target.files[0];
+            if (!file || !activeStudentEmail) return;
+            const photoData = await compressImageDataUrl(file, 400, 0.75);
+            appState.registrations.forEach(r => {
+                if (r.email === activeStudentEmail) {
+                    r.profilePhoto = photoData;
+                }
+            });
+            (appState.testimonies || []).forEach(t => {
+                if (t.studentEmail === activeStudentEmail) {
+                    t.photo = photoData;
+                }
+            });
+            saveState();
+            showToast('Your profile picture has been updated!', 'success');
         }
 
         async function pullStateFromCloud() {
@@ -2366,6 +2669,25 @@
 
             appState.registrations.unshift(newReg);
             window.appState = appState;
+            const selectedProg = appState.programs.find(p => p.id === programId);
+            const progLabel = selectedProg ? `${selectedProg.title} (${selectedProg.year})` : programId;
+
+            if (appState.notificationSettings?.notifyOnRegistration !== false) {
+                notifyAdminViaEmail(
+                    'New Registration',
+                    `[LHCI New Student] ${name} registered for ${progLabel}`,
+                    {
+                        Student_Name: name,
+                        Student_Email: email,
+                        Phone_WhatsApp: phone,
+                        Location: location,
+                        Course_Selected: progLabel,
+                        Payment_Reference: paymentRef,
+                        Receipt_File: pendingReceiptData.name
+                    }
+                );
+            }
+
             pendingReceiptData = { name: '', type: '', dataUrl: '' };
             pendingRegAvatarData = '';
             document.getElementById('portal-receipt-filename').textContent = 'Select payment receipt file';
@@ -2993,6 +3315,7 @@
             renderAdminProgramsList();
             renderAdminVideosList();
             renderAdminMaterialsList();
+            renderAdminNotificationLogs();
             populateAllAdminForms();
             lucide.createIcons();
         }
@@ -3793,6 +4116,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             refreshAllViews();
+            trackVisitorArrival();
             pullStateFromCloud();
             setInterval(pullStateFromCloud, 12000);
         });
