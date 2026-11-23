@@ -13,27 +13,36 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        lhRed: '#e11d48',
-                        lhOrange: '#f97316',
-                        lhGold: '#eab308',
-                        lhGreen: '#10b981',
-                        lhBlue: '#2563eb',
-                        lhIndigo: '#4f46e5',
-                        lhViolet: '#7c3aed',
+        if (window.tailwind) {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Inter', 'sans-serif'],
+                            display: ['Plus Jakarta Sans', 'sans-serif'],
+                        },
+                        colors: {
+                            lhRed: '#e11d48',
+                            lhOrange: '#f97316',
+                            lhGold: '#eab308',
+                            lhGreen: '#10b981',
+                            lhBlue: '#2563eb',
+                            lhIndigo: '#4f46e5',
+                            lhViolet: '#7c3aed',
+                        }
                     }
                 }
-            }
+            };
         }
     </script>
     <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+        }
+        .hidden { display: none !important; }
         .rainbow-bar {
             background: linear-gradient(90deg, #e11d48 0%, #f97316 18%, #eab308 36%, #10b981 54%, #2563eb 72%, #4f46e5 86%, #7c3aed 100%);
         }
@@ -1288,6 +1297,30 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Cross-Device Shared Cloud Database Setup (Firebase Realtime DB) -->
+                    <div class="bg-emerald-50/80 p-6 rounded-2xl border border-emerald-200 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <h4 class="font-display font-extrabold text-base text-emerald-950 flex items-center gap-2">
+                                    <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i>
+                                    <span>Cross-Device Cloud Database (Sync All Phones &amp; Laptops)</span>
+                                </h4>
+                                <p class="text-xs text-slate-600 mt-1">
+                                    Static hosts like GitHub Pages store data per device unless connected to a free shared database. Paste your free <strong>Firebase Realtime Database URL</strong> (e.g. <code>https://your-project-default-rtdb.firebaseio.com</code>) below so registrations from every phone appear automatically in your Admin Portal!
+                                </p>
+                            </div>
+                        </div>
+                        <form onsubmit="handleSaveCloudDbUrl(event)" class="flex flex-col sm:flex-row gap-2">
+                            <input type="url" id="asec-firebase-url" placeholder="https://your-project-default-rtdb.firebaseio.com" class="flex-1 px-3.5 py-2.5 rounded-xl border border-emerald-300 text-xs bg-white">
+                            <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0">
+                                Connect &amp; Sync Cloud DB
+                            </button>
+                        </form>
+                        <p class="text-[11px] text-slate-500">
+                            Quick Setup: Go to <strong>console.firebase.google.com</strong> &rarr; Create free project &rarr; <strong>Build &rarr; Realtime Database &rarr; Create Database (Start in Test Mode)</strong> &rarr; Copy the database URL and paste it above (then re-upload <code>index.html</code> once or share the link with <code>?db=YOUR_URL</code>).
+                        </p>
+                    </div>
                 </div>
 
             </div>
@@ -1305,10 +1338,8 @@
         const STUDENT_SESSION_KEY = 'lhci_active_student_email';
         const ADMIN_SESSION_KEY = 'lhci_admin_logged_in';
         const VISITOR_PING_SESSION_KEY = 'lhci_visitor_notified_session';
-        const CLOUD_SYNC_ENDPOINTS = [
-            'https://kvdb.io/A2k9LmP7xQ4nR8vW3zB6cJ/lhci_portal_live_v2',
-            'https://jsonblob.com/api/jsonBlob/019358c4-9a12-7b4e-8f31-9c2d4e5f6a7b'
-        ];
+        const CUSTOM_CLOUD_DB_KEY = 'lhci_custom_firebase_rtdb_url';
+        const DEFAULT_FIREBASE_RTDB_URL = 'https://lighthousecreativesintl-default-rtdb.firebaseio.com';
         let lastLocalSaveTs = 0;
         let isSyncingCloud = false;
 
@@ -1575,9 +1606,6 @@
             });
             merged.activityLogs = Array.from(logMap.values()).slice(0, 50);
 
-            if (!Array.isArray(merged.programs) || merged.programs.length === 0) {
-                merged.programs = localData.programs;
-            }
             return merged;
         }
 
@@ -1588,17 +1616,18 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
             } catch (e) {
                 console.warn('LocalStorage quota warning:', e);
-                showToast('Browser storage full — please use smaller image files (<500KB).', 'error');
             }
-            pushStateToCloud();
             refreshAllViews();
+            pushStateToCloud();
         }
 
-        function compressImageDataUrl(file, maxWidth = 650, quality = 0.65) {
+        function compressImageDataUrl(file, maxDim = 450, quality = 0.72) {
             return new Promise((resolve) => {
-                if (!file.type.startsWith('image/')) {
+                if (!file) return resolve('');
+                if (!file.type || !file.type.startsWith('image/')) {
                     const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
+                    reader.onload = () => resolve(reader.result || '');
+                    reader.onerror = () => resolve('');
                     reader.readAsDataURL(file);
                     return;
                 }
@@ -1606,76 +1635,67 @@
                 reader.onload = (ev) => {
                     const img = new Image();
                     img.onload = () => {
-                        const scale = Math.min(1, maxWidth / img.width);
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
                         const canvas = document.createElement('canvas');
-                        canvas.width = Math.round(img.width * scale);
-                        canvas.height = Math.round(img.height * scale);
+                        canvas.width = w;
+                        canvas.height = h;
                         const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, w, h);
                         resolve(canvas.toDataURL('image/jpeg', quality));
                     };
-                    img.onerror = () => resolve(ev.target.result);
+                    img.onerror = () => resolve(ev.target.result || '');
                     img.src = ev.target.result;
                 };
+                reader.onerror = () => resolve('');
                 reader.readAsDataURL(file);
             });
         }
 
+        function getActiveCloudDbUrl() {
+            const custom = (localStorage.getItem(CUSTOM_CLOUD_DB_KEY) || '').trim().replace(/\/+$/, '');
+            if (custom && custom.startsWith('https://')) return custom;
+            return (DEFAULT_FIREBASE_RTDB_URL || '').trim().replace(/\/+$/, '');
+        }
+
         async function fetchRemoteStateOnce() {
-            for (const baseUrl of CLOUD_SYNC_ENDPOINTS) {
-                try {
-                    const sep = baseUrl.includes('?') ? '&' : '?';
-                    const res = await fetch(`${baseUrl}${sep}t=${Date.now()}`, {
-                        method: 'GET',
-                        headers: { 'Accept': 'application/json' },
-                        cache: 'no-store'
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && Array.isArray(data.registrations) && Array.isArray(data.programs)) {
-                            return data;
-                        }
-                    }
-                } catch (e) {}
+            const dbUrl = getActiveCloudDbUrl();
+            if (!dbUrl) return null;
+            try {
+                const res = await fetch(`${dbUrl}/lhci_portal_state.json`, { method: 'GET' });
+                if (!res.ok) return null;
+                return await res.json();
+            } catch (e) {
+                return null;
             }
-            return null;
         }
 
         async function pushStateToCloud() {
-            if (isSyncingCloud) return;
+            const dbUrl = getActiveCloudDbUrl();
+            if (!dbUrl || isSyncingCloud) return;
             isSyncingCloud = true;
-            updateCloudSyncStatusUI('Syncing to cloud...', false);
             try {
-                // Pull latest remote first so concurrent mobile registrations are never overwritten
-                const latestRemote = await fetchRemoteStateOnce();
-                if (latestRemote) {
-                    appState = mergePortalStates(appState, latestRemote);
-                    window.appState = appState;
-                    try {
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-                    } catch (e) {}
-                }
-
-                const payload = JSON.stringify(appState);
-                let anySuccess = false;
-                for (const baseUrl of CLOUD_SYNC_ENDPOINTS) {
-                    try {
-                        const isJsonBlob = baseUrl.includes('jsonblob.com');
-                        const res = await fetch(baseUrl, {
-                            method: isJsonBlob ? 'PUT' : 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: payload
-                        });
-                        if (res.ok) anySuccess = true;
-                    } catch (e) {}
-                }
-                updateCloudSyncStatusUI(
-                    anySuccess ? `Synced (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})` : 'Offline / Local Saved',
-                    anySuccess
-                );
+                const remote = await fetchRemoteStateOnce();
+                const merged = remote ? mergePortalStates(appState, remote) : appState;
+                window.appState = merged;
+                appState = merged;
+                await fetch(`${dbUrl}/lhci_portal_state.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(appState)
+                });
+                updateCloudSyncStatusUI(`Live Synced (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`, true);
+            } catch (e) {
+                updateCloudSyncStatusUI('Cloud Sync Retrying...', false);
             } finally {
                 isSyncingCloud = false;
             }
@@ -1683,6 +1703,11 @@
 
         async function pullStateFromCloud(force = false) {
             if (isSyncingCloud) return;
+            const dbUrl = getActiveCloudDbUrl();
+            if (!dbUrl) {
+                updateCloudSyncStatusUI('Local Device Only (Set Cloud DB in Tab 8)', false);
+                return;
+            }
             if (!force && Date.now() - lastLocalSaveTs < 6000) return;
             const remote = await fetchRemoteStateOnce();
             if (remote) {
@@ -1695,493 +1720,300 @@
                 } catch (e) {}
                 updateCloudSyncStatusUI(`Live Synced (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`, true);
                 refreshAllViews();
-            } else {
-                updateCloudSyncStatusUI('Checking Cloud...', false);
             }
         }
 
         async function forceRefreshAdminRecords() {
+            const dbUrl = getActiveCloudDbUrl();
+            if (!dbUrl) {
+                showToast('No Cloud DB connected yet. Add your Firebase URL in Tab 8.', 'warning');
+                return;
+            }
+            updateCloudSyncStatusUI('Syncing across devices...', false);
             await pullStateFromCloud(true);
-            renderAdminDashboard();
-            showToast('Admin records synced across devices!', 'success');
+            showToast('Records synced with Cloud Database.', 'success');
         }
 
-        // =========================================================
-        // AUTOMATED ADMIN EMAIL NOTIFICATION DISPATCHER
-        // =========================================================
-        function logAdminActivity(type, title, details) {
-            if (!Array.isArray(appState.activityLogs)) appState.activityLogs = [];
-            appState.activityLogs.unshift({
-                id: 'log-' + Date.now(),
-                type,
-                title,
-                details,
-                timestamp: new Date().toLocaleString()
-            });
-            if (appState.activityLogs.length > 50) {
-                appState.activityLogs = appState.activityLogs.slice(0, 50);
+        function handleSaveCloudDbUrl(e) {
+            e.preventDefault();
+            const input = document.getElementById('asec-firebase-url');
+            const rawUrl = (input?.value || '').trim().replace(/\/+$/, '');
+            if (!rawUrl || !rawUrl.startsWith('https://')) {
+                showToast('Please enter a valid HTTPS Firebase Realtime Database URL.', 'error');
+                return;
             }
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-            } catch (e) {}
-        }
-
-        async function dispatchEmailToAdmin(subject, fieldsObj) {
-            const adminEmail = (appState.about && appState.about.email) || 'info@lighthousecreatives.org';
-            if (!adminEmail) return false;
-            try {
-                const payload = {
-                    _subject: subject,
-                    _template: 'table',
-                    _captcha: 'false',
-                    Organization: appState.branding.orgName,
-                    Timestamp: new Date().toLocaleString(),
-                    ...fieldsObj
-                };
-                const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(adminEmail)}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-                return res.ok;
-            } catch (err) {
-                console.warn('Background admin email dispatch skipped:', err);
-                return false;
-            }
-        }
-
-        function notifyAdminOnWebsiteVisit() {
-            if (sessionStorage.getItem(VISITOR_PING_SESSION_KEY)) return;
-            sessionStorage.setItem(VISITOR_PING_SESSION_KEY, '1');
-
-            const pageHash = window.location.hash || '#home';
-            const deviceInfo = /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'Mobile Device' : 'Desktop / Laptop';
-            const summary = `${deviceInfo} opened ${pageHash}`;
-
-            logAdminActivity('visit', 'New Portal Visitor', summary);
-
-            if (appState.notifyAdminOnVisit !== false) {
-                dispatchEmailToAdmin(
-                    `[LHCI Portal] New Visitor Alert (${deviceInfo})`,
-                    {
-                        Event: 'Website Visitor Arrived',
-                        Device: deviceInfo,
-                        Entry_Page: pageHash,
-                        Referrer: document.referrer || 'Direct Link'
-                    }
-                );
-            }
-        }
-
-        function sendTestAdminEmailAlert() {
-            const adminEmail = (appState.about && appState.about.email) || 'info@lighthousecreatives.org';
-            logAdminActivity('test', 'Test Email Alert Sent', `Dispatched to ${adminEmail}`);
-            renderAdminSecurityLogs();
-            dispatchEmailToAdmin(
-                '[LHCI Portal] Test Administrator Email Connection',
-                {
-                    Event: 'Administrator Email Test',
-                    Message: 'Your LIGHT HOUSE CREATIVES INTERNATIONAL portal is connected to receive visitor and student registration notifications.'
-                }
-            ).then(ok => {
-                if (ok) {
-                    showToast(`Test alert sent to ${adminEmail}! (Check inbox/spam to confirm activation on first use).`, 'success');
-                } else {
-                    showToast(`Notification queued for ${adminEmail}.`, 'info');
-                }
-            });
-        }
-
-        function toggleAdminNotificationPref() {
-            appState.notifyAdminOnVisit = document.getElementById('asec-notify-visit').checked;
-            appState.notifyAdminOnRegistration = document.getElementById('asec-notify-reg').checked;
-            saveState();
-            showToast('Admin email alert preferences saved.', 'success');
-        }
-
-        function clearActivityLogs() {
-            appState.activityLogs = [];
-            saveState();
-            renderAdminSecurityLogs();
-            showToast('Activity log cleared.', 'info');
-        }
-
-        // =========================================================
-        // NAVIGATION & PAGE ROUTING
-        // =========================================================
-        function navigateTo(pageId, sectionId = null) {
-            document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
-            const target = document.getElementById('page-' + pageId);
-            if (target) target.classList.remove('hidden');
-
-            if (pageId === 'register') {
-                populateProgramDropdowns();
-                updateRegistrationPaymentInfo();
-            }
-            if (pageId === 'student-portal') {
-                updateStudentPortalUI();
-            }
-
-            if (sectionId) {
-                setTimeout(() => scrollToSection(sectionId), 60);
-            } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            lucide.createIcons();
-        }
-
-        function scrollToSection(id) {
-            const el = document.getElementById(id);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function toggleMobileMenu() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+            localStorage.setItem(CUSTOM_CLOUD_DB_KEY, rawUrl);
+            updateCloudSyncStatusUI('Connecting...', false);
+            pushStateToCloud().then(() => pullStateFromCloud(true));
+            showToast('Cloud Database connected! Syncing across devices.', 'success');
         }
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
+            if (!container) return;
             const colors = {
-                success: 'bg-emerald-600 text-white',
-                error: 'bg-rose-600 text-white',
-                info: 'bg-slate-900 text-white'
+                success: 'bg-emerald-600 text-white border-emerald-500',
+                error: 'bg-rose-600 text-white border-rose-500',
+                warning: 'bg-amber-500 text-slate-950 border-amber-400',
+                info: 'bg-slate-900 text-white border-slate-700'
             };
             const el = document.createElement('div');
-            el.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition transform ${colors[type] || colors.info}`;
-            el.innerHTML = `<span>${message}</span>`;
+            el.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl border text-xs sm:text-sm font-bold flex items-center gap-2 transition-all duration-300 ${colors[type] || colors.info}`;
+            el.textContent = message;
             container.appendChild(el);
             setTimeout(() => {
                 el.style.opacity = '0';
                 setTimeout(() => el.remove(), 300);
-            }, 4000);
+            }, 3800);
         }
 
-        function updateHeaderAdminButton() {
-            const btn = document.getElementById('header-admin-btn');
-            const lbl = document.getElementById('header-admin-btn-label');
-            if (!btn || !lbl) return;
-            if (isAdminLoggedIn) {
-                lbl.textContent = 'Admin (Active)';
-                btn.classList.remove('bg-slate-900');
-                btn.classList.add('bg-emerald-700');
-            } else {
-                lbl.textContent = 'Admin';
-                btn.classList.remove('bg-emerald-700');
-                btn.classList.add('bg-slate-900');
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function navigateTo(page, sectionId = '') {
+            document.querySelectorAll('.page-view').forEach(p => p.classList.add('hidden'));
+            const target = document.getElementById(`page-${page}`);
+            if (target) target.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (sectionId) {
+                setTimeout(() => scrollToSection(sectionId), 120);
             }
+            if (page === 'register') {
+                populateProgramDropdowns();
+                updateRegistrationPaymentInfo();
+            }
+            if (page === 'student-portal') {
+                renderStudentPortalState();
+            }
+            if (window.lucide) lucide.createIcons();
         }
 
-        // =========================================================
-        // PUBLIC SITE RENDERING (BRANDING, PROGRAMS, TESTIMONIES, ABOUT)
-        // =========================================================
         function renderSiteContent() {
-            const b = appState.branding;
-            document.getElementById('header-org-name').textContent = b.orgName;
-            document.getElementById('header-org-tagline').textContent = b.tagline;
-            document.getElementById('footer-org-name').textContent = b.orgName;
-            document.getElementById('footer-year').textContent = new Date().getFullYear();
+            const b = appState.branding || defaultState.branding;
+            const a = appState.about || defaultState.about;
+
+            const setText = (id, val) => {
+                const el = document.getElementById(id);
+                if (el && val !== undefined) el.textContent = val;
+            };
+
+            setText('header-org-name', b.orgName);
+            setText('header-org-tagline', b.tagline);
+            setText('footer-org-name', b.orgName);
+            setText('hero-subheadline', b.heroSubtitle);
+            setText('hero-founder-name', b.founderName);
+            setText('hero-founder-role', b.founderRole);
+            setText('hero-founder-quote', b.founderQuote);
+            setText('main-founder-name', b.founderName);
+            setText('main-founder-title', b.founderRole);
 
             if (b.logoDataUrl) {
-                document.getElementById('header-logo-box').innerHTML = `<img src="${b.logoDataUrl}" alt="Logo" class="w-full h-full object-cover">`;
+                const logoBox = document.getElementById('header-logo-box');
+                if (logoBox) {
+                    logoBox.innerHTML = `<img src="${b.logoDataUrl}" alt="Logo" class="w-full h-full object-cover">`;
+                }
             }
 
-            document.getElementById('hero-headline').innerHTML = b.heroTitle;
-            document.getElementById('hero-subheadline').textContent = b.heroSubtitle;
-            document.getElementById('hero-founder-img').src = b.founderPhoto;
-            document.getElementById('hero-founder-name').textContent = b.founderName;
-            document.getElementById('hero-founder-role').textContent = b.founderRole;
-            document.getElementById('hero-founder-quote').textContent = b.founderQuote;
+            ['hero-founder-img', 'main-founder-img'].forEach(imgId => {
+                const img = document.getElementById(imgId);
+                if (img && b.founderPhoto) img.src = b.founderPhoto;
+            });
 
-            document.getElementById('main-founder-img').src = b.founderPhoto;
-            document.getElementById('main-founder-name').textContent = b.founderName;
-            document.getElementById('main-founder-title').textContent = b.founderRole;
-            document.getElementById('main-founder-bio').innerHTML = b.founderBio
-                .split('\n\n')
-                .map(p => `<p>${escapeHtml(p)}</p>`)
-                .join('');
+            const bioContainer = document.getElementById('main-founder-bio');
+            if (bioContainer && b.founderBio) {
+                bioContainer.innerHTML = b.founderBio
+                    .split('\n\n')
+                    .map(p => `<p>${escapeHtml(p)}</p>`)
+                    .join('');
+            }
 
-            document.getElementById('stat-programs-count').textContent = appState.programs.length + '+';
-            document.getElementById('stat-videos-count').textContent = (appState.videos.length + appState.resources.length) + '+';
+            setText('stat-programs-count', `${(appState.programs || []).length}+`);
+            setText('about-mission-text', a.mission);
+            setText('about-vision-text', a.vision);
+            setText('about-values-text', a.values);
+            setText('about-contact-email', a.email);
+            setText('about-contact-phone', a.phone);
+            setText('about-contact-address', a.address);
+            setText('footer-year', new Date().getFullYear());
 
-            // About Page
-            const a = appState.about;
-            document.getElementById('about-mission-text').textContent = a.mission;
-            document.getElementById('about-vision-text').textContent = a.vision;
-            document.getElementById('about-values-text').textContent = a.values;
-            document.getElementById('about-contact-email').textContent = a.email;
-            document.getElementById('about-contact-phone').textContent = a.phone;
-            document.getElementById('about-contact-address').textContent = a.address;
-
-            document.getElementById('about-team-grid').innerHTML = a.team.map(m => `
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition">
-                    <div class="h-56 bg-slate-100">
-                        <img src="${m.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'}" alt="${escapeHtml(m.name)}" class="w-full h-full object-cover object-top">
+            const teamGrid = document.getElementById('about-team-grid');
+            if (teamGrid) {
+                teamGrid.innerHTML = (a.team || []).map(member => `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div class="aspect-square bg-slate-100">
+                            <img src="${member.photo || 'https://placehold.co/400x400/1e293b/ffffff?text=LHCI'}" alt="${escapeHtml(member.name)}" class="w-full h-full object-cover object-top">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-display font-extrabold text-base text-slate-900">${escapeHtml(member.name)}</h3>
+                            <p class="text-xs font-semibold text-indigo-600 mt-0.5">${escapeHtml(member.role)}</p>
+                        </div>
                     </div>
-                    <div class="p-5">
-                        <h4 class="font-display font-extrabold text-base text-slate-900">${escapeHtml(m.name)}</h4>
-                        <p class="text-xs font-semibold text-indigo-600 mt-1">${escapeHtml(m.role)}</p>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
 
-            const socials = [
-                { label: 'Instagram', url: a.socials.instagram, icon: 'instagram' },
-                { label: 'YouTube', url: a.socials.youtube, icon: 'youtube' },
-                { label: 'Facebook', url: a.socials.facebook, icon: 'facebook' },
-                { label: 'LinkedIn', url: a.socials.linkedin, icon: 'linkedin' }
-            ].filter(s => s.url);
+            const socialsBox = document.getElementById('about-socials-container');
+            if (socialsBox && a.socials) {
+                const links = [
+                    { label: 'Instagram', url: a.socials.instagram },
+                    { label: 'YouTube', url: a.socials.youtube },
+                    { label: 'Facebook', url: a.socials.facebook },
+                    { label: 'LinkedIn', url: a.socials.linkedin }
+                ].filter(s => s.url);
+                socialsBox.innerHTML = links.map(s => `
+                    <a href="${s.url}" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition">
+                        ${s.label}
+                    </a>
+                `).join('');
+            }
+        }
 
-            document.getElementById('about-socials-container').innerHTML = socials.map(s => `
-                <a href="${s.url}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition">
-                    <i data-lucide="${s.icon}" class="w-4 h-4"></i>
-                    <span>${s.label}</span>
-                </a>
-            `).join('');
-
-            renderPrograms();
-            renderHomeTestimoniesSlider();
-            populateProgramDropdowns();
-            updateRegistrationPaymentInfo();
-            updateStudentPortalUI();
-            updateHeaderAdminButton();
-            lucide.createIcons();
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
 
         function renderPrograms() {
-            const filter = document.getElementById('program-status-filter').value;
-            const list = filter === 'all'
-                ? appState.programs
-                : appState.programs.filter(p => p.status === filter);
+            const grid = document.getElementById('programs-grid');
+            if (!grid) return;
+            const filter = document.getElementById('program-status-filter')?.value || 'all';
+            const list = (appState.programs || []).filter(p => filter === 'all' || p.status === filter);
 
-            const statusBadge = {
-                Open: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-                Upcoming: 'bg-amber-100 text-amber-800 border-amber-200',
-                Completed: 'bg-slate-100 text-slate-700 border-slate-200'
-            };
-
-            document.getElementById('programs-grid').innerHTML = list.map(p => `
-                <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col">
-                    <div class="h-48 bg-slate-900 relative overflow-hidden">
-                        <img src="${p.image || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80'}" alt="${escapeHtml(p.title)}" class="w-full h-full object-cover opacity-90">
-                        <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-extrabold border ${statusBadge[p.status] || statusBadge.Open}">
-                            ${escapeHtml(p.status)}
-                        </span>
-                        <span class="absolute bottom-3 right-3 px-3 py-1 rounded-lg bg-slate-950/80 text-white text-[11px] font-bold">
-                            ${escapeHtml(p.year)}
-                        </span>
-                    </div>
-                    <div class="p-6 flex-1 flex flex-col justify-between space-y-5">
-                        <div class="space-y-2.5">
-                            <div class="flex items-center justify-between text-xs font-bold text-indigo-600">
-                                <span>${escapeHtml(p.duration)}</span>
-                                <span class="text-rose-600">${escapeHtml(p.fee)}</span>
-                            </div>
-                            <h3 class="font-display font-extrabold text-xl text-slate-900 leading-snug">${escapeHtml(p.title)}</h3>
-                            <p class="text-slate-600 text-sm leading-relaxed">${escapeHtml(p.description)}</p>
-                        </div>
-                        <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
-                            <button onclick="selectProgramAndRegister('${p.id}')" class="flex-1 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs sm:text-sm font-bold transition">
-                                Enroll &amp; Upload Receipt
-                            </button>
-                            <button onclick="navigateTo('student-portal')" class="py-2.5 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition" title="Student Portal">
-                                Portal
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function renderHomeTestimoniesSlider() {
-            const container = document.getElementById('home-testimonies-slider');
-            const dotsContainer = document.getElementById('home-testimonies-dots');
-            if (!container) return;
-
-            const items = appState.testimonies || [];
-            if (items.length === 0) {
-                container.innerHTML = `<div class="col-span-3 p-8 rounded-3xl bg-white/5 border border-white/10 text-center text-slate-400 text-sm">No student testimonies published yet. Be the first to share your experience inside the Student Portal!</div>`;
-                if (dotsContainer) dotsContainer.innerHTML = '';
+            if (!list.length) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-sm">No training programs match the selected filter.</div>`;
                 return;
             }
 
-            const visibleCount = Math.min(3, items.length);
-            const slice = [];
-            for (let i = 0; i < visibleCount; i++) {
-                slice.push(items[(testimonySlideIndex + i) % items.length]);
-            }
-
-            container.innerHTML = slice.map(t => {
-                const prog = appState.programs.find(p => p.id === t.programId);
-                const initials = (t.studentName || 'ST').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+            grid.innerHTML = list.map(prog => {
+                const badgeClass = prog.status === 'Open'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : prog.status === 'Upcoming'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-slate-200 text-slate-700';
                 return `
-                    <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-6 sm:p-7 flex flex-col justify-between space-y-5 shadow-xl">
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span class="px-2.5 py-1 rounded-full bg-amber-400/15 text-amber-300 text-[11px] font-bold">
-                                    ${escapeHtml(prog ? prog.title : 'LHCI Cohort Graduate')}
-                                </span>
-                                <i data-lucide="quote" class="w-5 h-5 text-indigo-400"></i>
-                            </div>
-                            <p class="text-slate-200 text-sm leading-relaxed italic">"${escapeHtml(t.message)}"</p>
+                    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col">
+                        <div class="h-48 bg-slate-900 relative overflow-hidden">
+                            <img src="${prog.image || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80'}" alt="${escapeHtml(prog.title)}" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-extrabold ${badgeClass}">
+                                ${escapeHtml(prog.status)}
+                            </span>
+                            <span class="absolute bottom-3 right-3 px-3 py-1 rounded-full text-xs font-extrabold bg-slate-950/85 text-white">
+                                ${escapeHtml(prog.fee || 'Free')}
+                            </span>
                         </div>
-                        <div class="flex items-center gap-3 pt-4 border-t border-white/10">
-                            ${t.photo
-                                ? `<img src="${t.photo}" alt="${escapeHtml(t.studentName)}" class="w-12 h-12 rounded-full object-cover border-2 border-amber-400 shrink-0">`
-                                : `<div class="w-12 h-12 rounded-full rainbow-bar flex items-center justify-center font-display font-extrabold text-sm text-white shrink-0">${initials}</div>`
-                            }
-                            <div class="min-w-0">
-                                <h4 class="font-display font-extrabold text-sm text-white truncate">${escapeHtml(t.studentName)}</h4>
-                                <p class="text-xs text-slate-400 truncate">${escapeHtml(t.role || 'Certified Student')}</p>
+                        <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+                            <div class="space-y-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">${escapeHtml(prog.year)} &bull; ${escapeHtml(prog.duration)}</span>
+                                <h3 class="font-display font-extrabold text-lg text-slate-900 leading-snug">${escapeHtml(prog.title)}</h3>
+                                <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${escapeHtml(prog.description)}</p>
                             </div>
+                            <button onclick="selectProgramAndRegister('${prog.id}')" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs sm:text-sm font-bold transition">
+                                Register for This Cohort
+                            </button>
                         </div>
                     </div>
                 `;
             }).join('');
-
-            if (dotsContainer) {
-                dotsContainer.innerHTML = items.map((_, idx) => `
-                    <button onclick="setTestimonySlide(${idx})" class="h-2 rounded-full transition-all ${idx === (testimonySlideIndex % items.length) ? 'w-7 bg-amber-400' : 'w-2 bg-white/30'}" aria-label="Slide ${idx + 1}"></button>
-                `).join('');
-            }
-            lucide.createIcons();
-        }
-
-        function nextTestimonySlide() {
-            const items = appState.testimonies || [];
-            if (items.length === 0) return;
-            testimonySlideIndex = (testimonySlideIndex + 1) % items.length;
-            renderHomeTestimoniesSlider();
-        }
-
-        function prevTestimonySlide() {
-            const items = appState.testimonies || [];
-            if (items.length === 0) return;
-            testimonySlideIndex = (testimonySlideIndex - 1 + items.length) % items.length;
-            renderHomeTestimoniesSlider();
-        }
-
-        function setTestimonySlide(idx) {
-            testimonySlideIndex = idx;
-            renderHomeTestimoniesSlider();
-        }
-
-        function populateProgramDropdowns() {
-            const optionsHtml = appState.programs.map(p =>
-                `<option value="${p.id}">${escapeHtml(p.title)} (${escapeHtml(p.year)}) — ${escapeHtml(p.fee)}</option>`
-            ).join('');
-
-            const regSelect = document.getElementById('reg-program');
-            if (regSelect) {
-                const prev = regSelect.value;
-                regSelect.innerHTML = optionsHtml;
-                if (prev && appState.programs.some(p => p.id === prev)) regSelect.value = prev;
-            }
-
-            const adminVidSelect = document.getElementById('avid-program');
-            if (adminVidSelect) adminVidSelect.innerHTML = optionsHtml;
-
-            const adminResSelect = document.getElementById('ares-program');
-            if (adminResSelect) adminResSelect.innerHTML = optionsHtml;
-
-            const sdashFilter = document.getElementById('sdash-video-filter');
-            if (sdashFilter) {
-                sdashFilter.innerHTML = `<option value="all">All Program Videos</option>` + appState.programs.map(p =>
-                    `<option value="${p.id}">${escapeHtml(p.title)}</option>`
-                ).join('');
-            }
-
-            const stestProg = document.getElementById('stest-program');
-            if (stestProg) {
-                stestProg.innerHTML = appState.programs.map(p =>
-                    `<option value="${p.id}">${escapeHtml(p.title)} (${escapeHtml(p.year)})</option>`
-                ).join('');
-            }
-        }
-
-        function updateRegistrationPaymentInfo() {
-            const sel = document.getElementById('reg-program');
-            if (!sel) return;
-            const prog = appState.programs.find(p => p.id === sel.value) || appState.programs[0];
-            if (!prog) return;
-            const feeBadge = document.getElementById('reg-selected-fee');
-            const detailsText = document.getElementById('reg-payment-details-text');
-            if (feeBadge) feeBadge.textContent = prog.fee || 'Contact Admin';
-            if (detailsText) detailsText.textContent = prog.paymentDetails || 'Contact Administrator for bank & payment details.';
         }
 
         function selectProgramAndRegister(programId) {
             navigateTo('register');
             setTimeout(() => {
-                const sel = document.getElementById('reg-program');
-                if (sel) {
-                    sel.value = programId;
+                const select = document.getElementById('reg-program');
+                if (select) {
+                    select.value = programId;
                     updateRegistrationPaymentInfo();
                 }
-            }, 80);
+            }, 60);
         }
 
-        // =========================================================
-        // REGISTRATION & STUDENT PORTAL AUTHENTICATION
-        // =========================================================
+        function populateProgramDropdowns() {
+            const programs = appState.programs || [];
+            const optionsHtml = programs.map(p => `<option value="${p.id}">${escapeHtml(p.title)} (${escapeHtml(p.fee || 'Free')})</option>`).join('');
+            ['reg-program', 'avid-program', 'ares-program', 'stest-program'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = optionsHtml;
+            });
+            const videoFilter = document.getElementById('sdash-video-filter');
+            if (videoFilter) {
+                videoFilter.innerHTML = `<option value="all">All Program Videos</option>` +
+                    programs.map(p => `<option value="${p.id}">${escapeHtml(p.title)}</option>`).join('');
+            }
+        }
+
+        function updateRegistrationPaymentInfo() {
+            const progId = document.getElementById('reg-program')?.value;
+            const prog = (appState.programs || []).find(p => p.id === progId) || (appState.programs || [])[0];
+            if (!prog) return;
+            const feeEl = document.getElementById('reg-selected-fee');
+            const detailsEl = document.getElementById('reg-payment-details-text');
+            if (feeEl) feeEl.textContent = prog.fee || 'Free';
+            if (detailsEl) detailsEl.textContent = prog.paymentDetails || 'Contact Admin for payment details.';
+        }
+
         async function handleRegAvatarFileChange(e) {
-            const file = e.target.files[0];
+            const file = e.target.files?.[0];
             if (!file) return;
-            pendingRegAvatarData = await compressImageDataUrl(file, 320, 0.7);
-            const lbl = document.getElementById('portal-avatar-filename');
-            if (lbl) lbl.textContent = `Selected: ${file.name}`;
+            document.getElementById('portal-avatar-filename').textContent = file.name;
+            pendingRegAvatarData = await compressImageDataUrl(file, 360, 0.75);
         }
 
         async function handleReceiptFileChange(e) {
-            const file = e.target.files[0];
+            const file = e.target.files?.[0];
             if (!file) return;
-            if (file.type === 'application/pdf' && file.size > 500 * 1024) {
-                showToast('PDF receipts must be under 500KB (or upload a screenshot/photo instead).', 'error');
-                e.target.value = '';
-                return;
-            }
-            const compressedUrl = await compressImageDataUrl(file, 650, 0.65);
-            pendingReceiptData = {
-                name: file.name,
-                type: file.type,
-                dataUrl: compressedUrl
-            };
-            document.getElementById('portal-receipt-filename').textContent = `Selected: ${file.name}`;
+            document.getElementById('portal-receipt-filename').textContent = file.name;
+            const dataUrl = await compressImageDataUrl(file, 650, 0.72);
+            pendingReceiptData = { name: file.name, dataUrl };
         }
 
-        function handleStudentAvatarUpload(e) {
-            const file = e.target.files[0];
-            if (!file || !activeStudentEmail) return;
-            compressImageDataUrl(file, 320, 0.7).then(photoData => {
-                appState.registrations.forEach(r => {
-                    if (r.email === activeStudentEmail) {
-                        r.profilePhoto = photoData;
-                        r.updatedAt = Date.now();
-                    }
-                });
-                (appState.testimonies || []).forEach(t => {
-                    if (t.studentEmail === activeStudentEmail) {
-                        t.photo = photoData;
-                    }
-                });
-                saveState();
-                showToast('Your profile picture has been updated!', 'success');
+        function logAdminActivity(type, message) {
+            appState.activityLogs = appState.activityLogs || [];
+            appState.activityLogs.unshift({
+                id: 'log-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+                type,
+                message,
+                timestamp: new Date().toLocaleString()
             });
+            appState.activityLogs = appState.activityLogs.slice(0, 50);
+        }
+
+        function dispatchAdminEmailAlert(subject, bodyLines) {
+            const targetEmail = (appState.about && appState.about.email) || 'info@lighthousecreatives.org';
+            try {
+                fetch(`https://formsubmit.co/ajax/${encodeURIComponent(targetEmail)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        _subject: subject,
+                        Organization: appState.branding?.orgName || 'LIGHT HOUSE CREATIVES INTERNATIONAL',
+                        Details: bodyLines.join('\n'),
+                        Timestamp: new Date().toLocaleString()
+                    })
+                }).catch(() => {});
+            } catch (e) {}
         }
 
         function handlePortalRegistration(e) {
             e.preventDefault();
-            if (!pendingReceiptData) {
-                showToast('Please select and upload your payment receipt file.', 'error');
-                return;
-            }
             const name = document.getElementById('reg-name').value.trim();
             const email = document.getElementById('reg-email').value.trim().toLowerCase();
             const phone = document.getElementById('reg-phone').value.trim();
@@ -2190,8 +2022,12 @@
             const password = document.getElementById('reg-password').value;
             const paymentRef = document.getElementById('reg-payment-ref').value.trim();
 
-            const existingProfile = appState.registrations.find(r => r.email === email);
+            if (!pendingReceiptData) {
+                showToast('Please upload your payment receipt before submitting.', 'warning');
+                return;
+            }
 
+            const prog = (appState.programs || []).find(p => p.id === programId);
             const newReg = {
                 id: 'reg-' + Date.now(),
                 updatedAt: Date.now(),
@@ -2203,51 +2039,46 @@
                 gender: '',
                 occupation: '',
                 bioSummary: '',
-                profilePhoto: pendingRegAvatarData || (existingProfile ? existingProfile.profilePhoto : ''),
+                profilePhoto: pendingRegAvatarData || '',
                 programId,
-                registeredAt: new Date().toISOString().split('T')[0],
+                registeredAt: new Date().toLocaleDateString(),
                 receiptName: pendingReceiptData.name,
                 receiptDataUrl: pendingReceiptData.dataUrl,
                 paymentRef,
                 paymentApproved: false,
-                paymentApprovedAt: null,
+                paymentApprovedAt: '',
                 certificateApproved: false,
                 certificateFileName: '',
                 certificateDataUrl: '',
-                approvedDate: null,
+                approvedDate: '',
                 isLoggedIn: true,
                 lastLoginAt: new Date().toLocaleString()
             };
 
+            appState.registrations = appState.registrations || [];
             appState.registrations.unshift(newReg);
+
+            logAdminActivity('Registration', `${name} (${email}) registered for ${prog ? prog.title : programId} — Ref: ${paymentRef}`);
+            if (appState.notifyAdminOnRegistration !== false) {
+                dispatchAdminEmailAlert(
+                    `New Student Registration: ${name} — LHCI Portal`,
+                    [
+                        `Student Name: ${name}`,
+                        `Email: ${email}`,
+                        `Phone: ${phone}`,
+                        `Location: ${location}`,
+                        `Course: ${prog ? prog.title : programId}`,
+                        `Payment Reference: ${paymentRef}`,
+                        `Receipt File: ${pendingReceiptData.name}`
+                    ]
+                );
+            }
+
             activeStudentEmail = email;
             localStorage.setItem(STUDENT_SESSION_KEY, email);
             pendingReceiptData = null;
             pendingRegAvatarData = '';
             e.target.reset();
-            document.getElementById('portal-receipt-filename').textContent = 'Click to select receipt screenshot or PDF';
-            const avatarLbl = document.getElementById('portal-avatar-filename');
-            if (avatarLbl) avatarLbl.textContent = 'Upload Profile Photo (JPG/PNG)';
-
-            const selectedProg = appState.programs.find(p => p.id === programId);
-            const progTitle = selectedProg ? selectedProg.title : programId;
-            logAdminActivity('registration', `New Student: ${name}`, `${email} • ${progTitle}`);
-
-            if (appState.notifyAdminOnRegistration !== false) {
-                dispatchEmailToAdmin(
-                    `[LHCI Portal] New Student Registration: ${name}`,
-                    {
-                        Event: 'New Course Registration & Receipt Submitted',
-                        Student_Name: name,
-                        Student_Email: email,
-                        Phone_WhatsApp: phone,
-                        Location: location,
-                        Selected_Program: progTitle,
-                        Payment_Reference: paymentRef,
-                        Receipt_File: newReg.receiptName
-                    }
-                );
-            }
 
             saveState();
             showToast('Registration submitted! Redirecting to your Student Portal...', 'success');
@@ -2258,94 +2089,88 @@
             e.preventDefault();
             const email = document.getElementById('portal-login-email').value.trim().toLowerCase();
             const password = document.getElementById('portal-login-password').value;
-            loginStudentAccount(email, password);
-        }
+            const matches = (appState.registrations || []).filter(r => r.email.toLowerCase() === email);
 
-        function loginStudentAccount(email, password) {
-            const cleanEmail = email.trim().toLowerCase();
-            const matches = appState.registrations.filter(r => r.email.toLowerCase() === cleanEmail);
-            if (matches.length === 0) {
-                showToast('No registration found with this email. Please register first.', 'error');
+            if (!matches.length) {
+                showToast('No registration found with that email address.', 'error');
                 return;
             }
-            const validPass = matches.some(r => (r.password || '123456') === password);
-            if (!validPass) {
+            const valid = matches.some(r => r.password === password);
+            if (!valid) {
                 showToast('Incorrect password. Please try again.', 'error');
                 return;
             }
-            const loginTimestamp = new Date().toLocaleString();
-            appState.registrations.forEach(r => {
-                if (r.email === cleanEmail) {
-                    r.isLoggedIn = true;
-                    r.lastLoginAt = loginTimestamp;
-                    r.loginCount = (r.loginCount || 0) + 1;
-                    r.updatedAt = Date.now();
-                }
+
+            matches.forEach(r => {
+                r.isLoggedIn = true;
+                r.lastLoginAt = new Date().toLocaleString();
+                r.updatedAt = Date.now();
             });
-            activeStudentEmail = cleanEmail;
-            localStorage.setItem(STUDENT_SESSION_KEY, cleanEmail);
+
+            activeStudentEmail = email;
+            localStorage.setItem(STUDENT_SESSION_KEY, email);
             saveState();
-            showToast('Welcome back! Your session will stay signed in.', 'success');
+            renderStudentPortalState();
+            showToast('Signed in to Student Portal!', 'success');
         }
 
         function logoutStudent() {
             if (activeStudentEmail) {
-                appState.registrations.forEach(r => {
-                    if (r.email === activeStudentEmail) {
+                (appState.registrations || []).forEach(r => {
+                    if (r.email.toLowerCase() === activeStudentEmail.toLowerCase()) {
                         r.isLoggedIn = false;
                         r.updatedAt = Date.now();
                     }
                 });
+                saveState();
             }
             activeStudentEmail = '';
             localStorage.removeItem(STUDENT_SESSION_KEY);
-            saveState();
-            showToast('Signed out of Student Portal.', 'info');
+            renderStudentPortalState();
+            showToast('You have signed out of the Student Portal.', 'info');
         }
 
-        // =========================================================
-        // AUTHENTICATED STUDENT DASHBOARD RENDERING
-        // =========================================================
-        function updateStudentPortalUI() {
+        function renderStudentPortalState() {
             const loginCard = document.getElementById('student-login-card');
-            const authDash = document.getElementById('student-authenticated-dashboard');
-            if (!loginCard || !authDash) return;
+            const dash = document.getElementById('student-authenticated-dashboard');
+            if (!loginCard || !dash) return;
 
-            if (!activeStudentEmail) {
-                loginCard.classList.remove('hidden');
-                authDash.classList.add('hidden');
-                return;
-            }
+            const studentRegs = activeStudentEmail
+                ? (appState.registrations || []).filter(r => r.email.toLowerCase() === activeStudentEmail.toLowerCase())
+                : [];
 
-            const userRegs = appState.registrations.filter(r => r.email === activeStudentEmail);
-            if (userRegs.length === 0) {
-                activeStudentEmail = '';
-                localStorage.removeItem(STUDENT_SESSION_KEY);
+            if (!studentRegs.length) {
                 loginCard.classList.remove('hidden');
-                authDash.classList.add('hidden');
+                dash.classList.add('hidden');
                 return;
             }
 
             loginCard.classList.add('hidden');
-            authDash.classList.remove('hidden');
+            dash.classList.remove('hidden');
 
-            const primary = userRegs[0];
+            const primary = studentRegs[0];
             document.getElementById('sdash-name').textContent = primary.name;
-            document.getElementById('sdash-email').textContent = `${primary.email} • ${primary.location || 'Global Student'}`;
+            document.getElementById('sdash-email').textContent = primary.email;
 
             const avatarImg = document.getElementById('sdash-avatar-img');
-            const avatarInitials = document.getElementById('sdash-avatar');
+            const avatarFallback = document.getElementById('sdash-avatar');
+            const bioPreview = document.getElementById('sbio-photo-preview');
             if (primary.profilePhoto) {
                 avatarImg.src = primary.profilePhoto;
                 avatarImg.classList.remove('hidden');
-                avatarInitials.classList.add('hidden');
+                avatarFallback.classList.add('hidden');
+                if (bioPreview) {
+                    bioPreview.src = primary.profilePhoto;
+                    bioPreview.classList.remove('hidden');
+                }
             } else {
                 avatarImg.classList.add('hidden');
-                avatarInitials.classList.remove('hidden');
-                avatarInitials.textContent = primary.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                avatarFallback.classList.remove('hidden');
+                avatarFallback.textContent = (primary.name || 'ST').slice(0, 2).toUpperCase();
+                if (bioPreview) bioPreview.classList.add('hidden');
             }
 
-            // Populate Bio Data Form
+            // Populate bio fields
             document.getElementById('sbio-name').value = primary.name || '';
             document.getElementById('sbio-email').value = primary.email || '';
             document.getElementById('sbio-phone').value = primary.phone || '';
@@ -2354,635 +2179,577 @@
             document.getElementById('sbio-occupation').value = primary.occupation || '';
             document.getElementById('sbio-summary').value = primary.bioSummary || '';
 
-            const bioPreview = document.getElementById('sbio-photo-preview');
-            if (bioPreview) {
-                if (primary.profilePhoto) {
-                    bioPreview.src = primary.profilePhoto;
-                    bioPreview.classList.remove('hidden');
-                } else {
-                    bioPreview.classList.add('hidden');
-                }
-            }
-
-            renderStudentEnrollmentsAndZoom(userRegs);
+            renderStudentEnrollments(studentRegs);
             renderStudentVideos();
             renderStudentResources();
-            renderStudentCertificates(userRegs);
-            renderStudentOwnTestimonies();
+            renderStudentCertificates(studentRegs);
+            renderStudentMyTestimonies();
         }
 
-        function switchStudentTab(tabName) {
+        function switchStudentTab(tabKey) {
             document.querySelectorAll('.stab-panel').forEach(p => p.classList.add('hidden'));
-            document.querySelectorAll('.stab-btn').forEach(b => {
-                b.classList.remove('bg-indigo-600', 'text-white');
-                b.classList.add('bg-white', 'border', 'border-slate-200', 'text-slate-700');
+            document.querySelectorAll('.stab-btn').forEach(btn => {
+                btn.className = 'stab-btn px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs sm:text-sm font-bold whitespace-nowrap';
             });
-            document.getElementById('stab-' + tabName).classList.remove('hidden');
-            const activeBtn = document.getElementById('stab-btn-' + tabName);
-            activeBtn.classList.remove('bg-white', 'border', 'border-slate-200', 'text-slate-700');
-            activeBtn.classList.add('bg-indigo-600', 'text-white');
-            lucide.createIcons();
+            const activePanel = document.getElementById(`stab-${tabKey}`);
+            const activeBtn = document.getElementById(`stab-btn-${tabKey}`);
+            if (activePanel) activePanel.classList.remove('hidden');
+            if (activeBtn) activeBtn.className = 'stab-btn px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-xs sm:text-sm font-bold whitespace-nowrap';
         }
 
-        function renderStudentEnrollmentsAndZoom(userRegs) {
-            document.getElementById('sdash-enrollments-list').innerHTML = userRegs.map(r => {
-                const prog = appState.programs.find(p => p.id === r.programId);
-                const progTitle = prog ? prog.title : r.programId;
-                const zoomLink = (prog && prog.zoomLink) || 'https://zoom.us';
-                const zoomPasscode = (prog && prog.zoomPasscode) || 'Contact Admin';
-                const zoomDate = (prog && prog.zoomDate) || 'Scheduled Cohort Date';
-                const zoomTime = (prog && prog.zoomTime) || 'Scheduled Cohort Time';
-                const zoomInstructions = (prog && prog.zoomInstructions) || 'Join 10 minutes early with your full registered name.';
-
-                return `
-                    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between space-y-5">
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="px-3 py-1 rounded-full text-[11px] font-extrabold ${r.paymentApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                                    ${r.paymentApproved ? 'Payment Approved • Zoom Unlocked' : 'Awaiting Admin Payment Approval'}
-                                </span>
-                                <span class="text-xs text-slate-400">${escapeHtml(r.registeredAt)}</span>
+        function renderStudentEnrollments(studentRegs) {
+            const box = document.getElementById('sdash-enrollments-list');
+            if (!box) return;
+            box.innerHTML = studentRegs.map(reg => {
+                const prog = (appState.programs || []).find(p => p.id === reg.programId) || {};
+                if (reg.paymentApproved) {
+                    return `
+                        <div class="bg-white rounded-3xl border-2 border-emerald-200 p-6 shadow-sm space-y-4">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800">Payment Approved &bull; Zoom Unlocked</span>
+                                    <h4 class="font-display font-extrabold text-lg text-slate-900 mt-2">${escapeHtml(prog.title || reg.programId)}</h4>
+                                </div>
                             </div>
-                            <h4 class="font-display font-extrabold text-lg text-slate-900">${escapeHtml(progTitle)}</h4>
-                            <p class="text-xs text-slate-600">Ref: <strong>${escapeHtml(r.paymentRef)}</strong> • Receipt: ${escapeHtml(r.receiptName)}</p>
-
-                            ${r.paymentApproved ? `
-                                <div class="mt-3 rounded-2xl bg-indigo-50 border border-indigo-200 p-4 space-y-2.5">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
-                                            <i data-lucide="video" class="w-4 h-4"></i> Live Zoom Classroom Details
-                                        </span>
-                                        <span class="px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold">VERIFIED</span>
-                                    </div>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800">
-                                        <div class="bg-white p-2.5 rounded-xl border border-indigo-100">
-                                            <span class="block text-[10px] uppercase font-bold text-slate-400">Class Date(s)</span>
-                                            <strong class="text-slate-900">${escapeHtml(zoomDate)}</strong>
-                                        </div>
-                                        <div class="bg-white p-2.5 rounded-xl border border-indigo-100">
-                                            <span class="block text-[10px] uppercase font-bold text-slate-400">Time</span>
-                                            <strong class="text-slate-900">${escapeHtml(zoomTime)}</strong>
-                                        </div>
-                                        <div class="bg-white p-2.5 rounded-xl border border-indigo-100 sm:col-span-2 flex items-center justify-between">
-                                            <div>
-                                                <span class="block text-[10px] uppercase font-bold text-slate-400">Zoom Meeting Passcode</span>
-                                                <strong class="text-indigo-700 font-mono text-sm">${escapeHtml(zoomPasscode)}</strong>
-                                            </div>
-                                            <button type="button" onclick="copyTextToClipboard('${escapeHtml(zoomPasscode)}', 'Zoom passcode copied!')" class="px-3 py-1.5 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-[11px] font-bold">
-                                                Copy Passcode
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="bg-white p-3 rounded-xl border border-indigo-100 text-xs text-slate-700">
-                                        <span class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Joining Instructions</span>
-                                        <p class="whitespace-pre-line leading-relaxed">${escapeHtml(zoomInstructions)}</p>
-                                    </div>
-                                    <a href="${zoomLink}" target="_blank" rel="noopener" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 shadow">
-                                        <i data-lucide="external-link" class="w-4 h-4"></i> Join Live Zoom Class Now
-                                    </a>
+                            <div class="rounded-2xl bg-indigo-50 border border-indigo-200 p-4 space-y-2 text-xs sm:text-sm">
+                                <p><strong>Zoom Link:</strong> <a href="${escapeHtml(prog.zoomLink || '#')}" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold break-all">${escapeHtml(prog.zoomLink || 'Link pending')}</a></p>
+                                <p><strong>Passcode:</strong> <span class="font-mono font-extrabold text-slate-900">${escapeHtml(prog.zoomPasscode || 'N/A')}</span></p>
+                                <p><strong>Date(s):</strong> ${escapeHtml(prog.zoomDate || 'TBA')}</p>
+                                <p><strong>Time:</strong> ${escapeHtml(prog.zoomTime || 'TBA')}</p>
+                                <div class="pt-2 border-t border-indigo-200/70">
+                                    <strong>Joining Instructions:</strong>
+                                    <p class="text-slate-700 whitespace-pre-line mt-1">${escapeHtml(prog.zoomInstructions || 'Join 10 minutes early.')}</p>
                                 </div>
-                            ` : `
-                                <div class="mt-3 rounded-2xl bg-amber-50 border border-amber-200 p-4 text-xs text-amber-900 space-y-1">
-                                    <p class="font-bold flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 text-amber-600"></i> Verification in Progress</p>
-                                    <p>Our Administrator is reviewing your uploaded payment receipt. Once approved, your Zoom Meeting Link, Passcode, Date, Time, and Joining Instructions will unlock here and be emailed to <strong>${escapeHtml(r.email)}</strong>.</p>
-                                </div>
-                            `}
+                            </div>
+                            ${prog.zoomLink ? `<a href="${escapeHtml(prog.zoomLink)}" target="_blank" rel="noopener noreferrer" class="block text-center w-full py-3 rounded-xl rainbow-bar text-white font-extrabold text-xs sm:text-sm shadow">Launch Zoom Classroom</a>` : ''}
                         </div>
-                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                            <span class="font-semibold text-slate-500">Certificate: <strong class="${r.certificateApproved ? 'text-indigo-600' : 'text-slate-400'}">${r.certificateApproved ? 'Ready' : 'Pending'}</strong></span>
-                            ${r.certificateApproved ? `<button onclick="switchStudentTab('certificates')" class="text-indigo-600 font-bold hover:underline">Download Certificate &rarr;</button>` : ''}
-                        </div>
+                    `;
+                }
+                return `
+                    <div class="bg-white rounded-3xl border border-amber-200 p-6 shadow-sm space-y-3">
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800">Pending Admin Payment Approval</span>
+                        <h4 class="font-display font-extrabold text-lg text-slate-900">${escapeHtml(prog.title || reg.programId)}</h4>
+                        <p class="text-xs text-slate-600">Receipt Uploaded: <strong>${escapeHtml(reg.receiptName)}</strong> (Ref: ${escapeHtml(reg.paymentRef)})</p>
+                        <p class="text-xs text-slate-500">Once the Administrator verifies your receipt, your Zoom meeting link, passcode, schedule, and joining instructions will unlock here automatically.</p>
                     </div>
                 `;
             }).join('');
-            lucide.createIcons();
-        }
-
-        function copyTextToClipboard(text, msg) {
-            navigator.clipboard?.writeText(text);
-            showToast(msg || 'Copied!', 'success');
         }
 
         function renderStudentVideos() {
-            const filter = document.getElementById('sdash-video-filter').value;
-            const vids = filter === 'all' ? appState.videos : appState.videos.filter(v => v.programId === filter);
-
-            document.getElementById('sdash-videos-grid').innerHTML = vids.map(v => {
-                const prog = appState.programs.find(p => p.id === v.programId);
+            const grid = document.getElementById('sdash-videos-grid');
+            if (!grid) return;
+            const filter = document.getElementById('sdash-video-filter')?.value || 'all';
+            const videos = (appState.videos || []).filter(v => filter === 'all' || v.programId === filter);
+            if (!videos.length) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-500 text-sm">No training videos available yet.</div>`;
+                return;
+            }
+            grid.innerHTML = videos.map(v => {
+                const prog = (appState.programs || []).find(p => p.id === v.programId);
                 return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col">
-                        <div class="aspect-video bg-slate-950">
-                            ${buildVideoEmbedHtml(v)}
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between space-y-3">
+                        <div class="space-y-1.5">
+                            <span class="text-[11px] font-bold text-rose-600 uppercase">${escapeHtml(prog?.title || 'Training Session')} &bull; ${escapeHtml(v.duration || 'HD')}</span>
+                            <h4 class="font-display font-extrabold text-base text-slate-900">${escapeHtml(v.title)}</h4>
+                            <p class="text-xs text-slate-600">${escapeHtml(v.notes || '')}</p>
                         </div>
-                        <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
-                            <div>
-                                <div class="flex items-center justify-between text-[11px] font-bold text-indigo-600 mb-1">
-                                    <span class="truncate">${escapeHtml(prog ? prog.title : 'Cohort Session')}</span>
-                                    <span class="shrink-0 ml-2">${escapeHtml(v.duration || 'HD')}</span>
-                                </div>
-                                <h4 class="font-display font-extrabold text-base text-slate-900">${escapeHtml(v.title)}</h4>
-                                <p class="text-xs text-slate-600 mt-1">${escapeHtml(v.notes || '')}</p>
-                            </div>
-                            ${v.url ? `<a href="${v.url}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:underline pt-2 border-t border-slate-100"><i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open / Download Source Video</a>` : ''}
-                        </div>
+                        <a href="${escapeHtml(v.url || '#')}" target="_blank" rel="noopener noreferrer" class="block text-center py-2.5 rounded-xl bg-slate-900 hover:bg-rose-600 text-white text-xs font-bold transition">
+                            Watch Class Video
+                        </a>
                     </div>
                 `;
             }).join('');
-            lucide.createIcons();
         }
 
         function renderStudentResources() {
-            document.getElementById('sdash-resources-grid').innerHTML = appState.resources.map(res => {
-                const prog = appState.programs.find(p => p.id === res.programId);
-                const isAudio = res.type === 'Audio';
-                const href = res.fileDataUrl || res.url || createFallbackTextDataUrl(res.title, res.description);
-                return `
-                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl ${isAudio ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'} flex items-center justify-center shrink-0">
-                                    <i data-lucide="${isAudio ? 'headphones' : 'file-text'}" class="w-5 h-5"></i>
-                                </div>
-                                <div>
-                                    <span class="text-[11px] font-extrabold uppercase tracking-wider ${isAudio ? 'text-rose-600' : 'text-indigo-600'}">${escapeHtml(res.type)} • ${escapeHtml(prog ? prog.title : 'General')}</span>
-                                    <h4 class="font-display font-extrabold text-base text-slate-900">${escapeHtml(res.title)}</h4>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-xs text-slate-600">${escapeHtml(res.description || '')}</p>
-                        ${isAudio && (res.fileDataUrl || res.url) ? `
-                            <audio controls class="w-full h-9">
-                                <source src="${res.fileDataUrl || res.url}">
-                            </audio>
-                        ` : ''}
-                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                            <span class="text-[11px] text-slate-400 truncate max-w-[200px]">${escapeHtml(res.fileName || 'Study Resource')}</span>
-                            <a href="${href}" download="${escapeHtml(res.fileName || 'LHCI_Resource')}" target="_blank" rel="noopener" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
-                                Download ${escapeHtml(res.type)}
-                            </a>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        function renderStudentCertificates(userRegs) {
-            document.getElementById('sdash-certificates-grid').innerHTML = userRegs.map(r => {
-                const prog = appState.programs.find(p => p.id === r.programId);
-                const progTitle = prog ? prog.title : r.programId;
-                return `
-                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-                        <div class="flex items-center justify-between">
-                            <span class="px-3 py-1 rounded-full text-[11px] font-extrabold ${r.certificateApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                                ${r.certificateApproved ? 'Official Certificate Ready' : 'Awaiting Admin Upload'}
-                            </span>
-                            <span class="text-xs font-mono text-slate-400">${escapeHtml(r.id.toUpperCase())}</span>
-                        </div>
-                        <div>
-                            <h4 class="font-display font-extrabold text-lg text-slate-900">${escapeHtml(progTitle)}</h4>
-                            <p class="text-xs text-slate-500 mt-1">Issued to: <strong>${escapeHtml(r.name)}</strong></p>
-                        </div>
-                        ${r.certificateApproved ? `
-                            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-3">
-                                <p class="text-xs text-emerald-900 font-semibold">
-                                    File: <strong>${escapeHtml(r.certificateFileName || 'Official_Certificate.pdf')}</strong>
-                                </p>
-                                ${r.certificateDataUrl && r.certificateDataUrl.startsWith('data:image')
-                                    ? `<img src="${r.certificateDataUrl}" alt="Certificate Preview" class="w-full max-h-48 object-contain rounded-lg border border-emerald-200 bg-white">`
-                                    : ''
-                                }
-                                <a href="${r.certificateDataUrl || createFallbackCertificateDataUrl(r, progTitle)}" download="${escapeHtml(r.certificateFileName || 'LHCI_Certificate_' + r.name.replace(/\s+/g, '_') + '.svg')}" class="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition">
-                                    <i data-lucide="download" class="w-4 h-4"></i> Download My Certificate
-                                </a>
-                            </div>
-                        ` : `
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500">
-                                Your certificate has not been uploaded by the Administrator yet. Once uploaded and approved, your download button will appear right here.
-                            </div>
-                        `}
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        function handleStudentTestimonySubmit(e) {
-            e.preventDefault();
-            if (!activeStudentEmail) return;
-            const userRegs = appState.registrations.filter(r => r.email === activeStudentEmail);
-            if (userRegs.length === 0) return;
-            const primary = userRegs[0];
-
-            const programId = document.getElementById('stest-program').value;
-            const role = document.getElementById('stest-role').value.trim() || primary.occupation || 'Certified Student';
-            const message = document.getElementById('stest-message').value.trim();
-
-            if (!Array.isArray(appState.testimonies)) appState.testimonies = [];
-            appState.testimonies.unshift({
-                id: 'test-' + Date.now(),
-                studentName: primary.name,
-                studentEmail: activeStudentEmail,
-                role,
-                programId,
-                photo: primary.profilePhoto || '',
-                message,
-                createdAt: new Date().toISOString().split('T')[0]
-            });
-
-            e.target.reset();
-            testimonySlideIndex = 0;
-            saveState();
-            showToast('Thank you! Your testimony is now live on the Home Page slider.', 'success');
-        }
-
-        function renderStudentOwnTestimonies() {
-            const container = document.getElementById('sdash-my-testimonies-list');
-            if (!container) return;
-            const mine = (appState.testimonies || []).filter(t => t.studentEmail === activeStudentEmail);
-            if (mine.length === 0) {
-                container.innerHTML = `<div class="p-5 rounded-2xl bg-white border border-slate-200 text-xs text-slate-500">You haven't posted a testimony yet. Use the form on the left to share your story!</div>`;
+            const grid = document.getElementById('sdash-resources-grid');
+            if (!grid) return;
+            const resources = appState.resources || [];
+            if (!resources.length) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-500 text-sm">No audio teachings or study documents uploaded yet.</div>`;
                 return;
             }
-            container.innerHTML = mine.map(t => {
-                const prog = appState.programs.find(p => p.id === t.programId);
+            grid.innerHTML = resources.map(r => {
+                const href = r.fileDataUrl || r.url || '#';
                 return `
-                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[11px] font-bold text-indigo-600">${escapeHtml(prog ? prog.title : 'Training Program')}</span>
-                            <button onclick="deleteTestimony('${t.id}')" class="text-[11px] font-bold text-rose-600 hover:underline">Delete</button>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between gap-3">
+                        <div>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-50 text-indigo-700 uppercase">${escapeHtml(r.type)}</span>
+                            <h4 class="font-display font-extrabold text-base text-slate-900 mt-2">${escapeHtml(r.title)}</h4>
+                            <p class="text-xs text-slate-600 mt-1">${escapeHtml(r.description || '')}</p>
                         </div>
-                        <p class="text-xs text-slate-700 italic">"${escapeHtml(t.message)}"</p>
-                        <p class="text-[11px] text-slate-400">Published on ${escapeHtml(t.createdAt || '')}</p>
+                        ${r.type === 'Audio' && href !== '#' ? `<audio controls src="${href}" class="w-full h-9"></audio>` : ''}
+                        <a href="${href}" target="_blank" download="${escapeHtml(r.fileName || 'resource')}" class="inline-flex items-center justify-center py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
+                            Open / Download ${escapeHtml(r.type)}
+                        </a>
                     </div>
                 `;
             }).join('');
         }
 
-        function deleteTestimony(id) {
-            appState.testimonies = (appState.testimonies || []).filter(t => t.id !== id);
+        function renderStudentCertificates(studentRegs) {
+            const grid = document.getElementById('sdash-certificates-grid');
+            if (!grid) return;
+            grid.innerHTML = studentRegs.map(reg => {
+                const prog = (appState.programs || []).find(p => p.id === reg.programId);
+                if (reg.certificateApproved) {
+                    return `
+                        <div class="bg-white rounded-3xl border-2 border-emerald-300 p-6 shadow-sm space-y-3">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800">Verified Official Certificate</span>
+                            <h4 class="font-display font-extrabold text-lg text-slate-900">${escapeHtml(prog?.title || reg.programId)}</h4>
+                            <p class="text-xs text-slate-600">Awarded to: <strong>${escapeHtml(reg.name)}</strong> (${escapeHtml(reg.approvedDate || 'Issued')})</p>
+                            ${reg.certificateDataUrl
+                                ? `<a href="${reg.certificateDataUrl}" download="${escapeHtml(reg.certificateFileName || 'LHCI_Certificate.png')}" class="block text-center py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold">Download Official Certificate</a>`
+                                : `<p class="text-xs font-semibold text-emerald-700">Certificate approved (${escapeHtml(reg.certificateFileName || 'On file')}).</p>`}
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-2">
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">In Progress</span>
+                        <h4 class="font-display font-extrabold text-lg text-slate-900">${escapeHtml(prog?.title || reg.programId)}</h4>
+                        <p class="text-xs text-slate-500">Your certificate will appear here once your cohort is completed and uploaded by the Administrator.</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function handleStudentAvatarUpload(e) {
+            const file = e.target.files?.[0];
+            if (!file || !activeStudentEmail) return;
+            const photoData = await compressImageDataUrl(file, 360, 0.75);
+            (appState.registrations || []).forEach(r => {
+                if (r.email.toLowerCase() === activeStudentEmail.toLowerCase()) {
+                    r.profilePhoto = photoData;
+                    r.updatedAt = Date.now();
+                }
+            });
+            (appState.testimonies || []).forEach(t => {
+                if ((t.studentEmail || '').toLowerCase() === activeStudentEmail.toLowerCase()) {
+                    t.photo = photoData;
+                }
+            });
             saveState();
-            showToast('Testimony removed.', 'info');
+            renderStudentPortalState();
+            showToast('Profile picture updated!', 'success');
         }
 
         function handleStudentBioUpdate(e) {
             e.preventDefault();
             if (!activeStudentEmail) return;
-            const updatedName = document.getElementById('sbio-name').value.trim();
-            const updatedPhone = document.getElementById('sbio-phone').value.trim();
-            const updatedLocation = document.getElementById('sbio-location').value.trim();
-            const updatedGender = document.getElementById('sbio-gender').value;
-            const updatedOccupation = document.getElementById('sbio-occupation').value.trim();
-            const updatedSummary = document.getElementById('sbio-summary').value.trim();
+            const name = document.getElementById('sbio-name').value.trim();
+            const phone = document.getElementById('sbio-phone').value.trim();
+            const location = document.getElementById('sbio-location').value.trim();
+            const gender = document.getElementById('sbio-gender').value;
+            const occupation = document.getElementById('sbio-occupation').value.trim();
+            const bioSummary = document.getElementById('sbio-summary').value.trim();
 
-            appState.registrations.forEach(r => {
-                if (r.email === activeStudentEmail) {
-                    r.name = updatedName;
-                    r.phone = updatedPhone;
-                    r.location = updatedLocation;
-                    r.gender = updatedGender;
-                    r.occupation = updatedOccupation;
-                    r.bioSummary = updatedSummary;
+            (appState.registrations || []).forEach(r => {
+                if (r.email.toLowerCase() === activeStudentEmail.toLowerCase()) {
+                    r.name = name;
+                    r.phone = phone;
+                    r.location = location;
+                    r.gender = gender;
+                    r.occupation = occupation;
+                    r.bioSummary = bioSummary;
                     r.updatedAt = Date.now();
                 }
             });
             saveState();
-            showToast('Your Bio Data has been updated!', 'success');
+            renderStudentPortalState();
+            showToast('Bio data saved successfully!', 'success');
         }
 
         function handleStudentPasswordChange(e) {
             e.preventDefault();
             if (!activeStudentEmail) return;
-            const cur = document.getElementById('spass-current').value;
-            const next = document.getElementById('spass-new').value;
-            const confirm = document.getElementById('spass-confirm').value;
+            const currentPass = document.getElementById('spass-current').value;
+            const newPass = document.getElementById('spass-new').value;
+            const confirmPass = document.getElementById('spass-confirm').value;
 
-            const userRegs = appState.registrations.filter(r => r.email === activeStudentEmail);
-            if (!userRegs.some(r => (r.password || '123456') === cur)) {
+            const studentRegs = (appState.registrations || []).filter(r => r.email.toLowerCase() === activeStudentEmail.toLowerCase());
+            if (!studentRegs.some(r => r.password === currentPass)) {
                 showToast('Current password is incorrect.', 'error');
                 return;
             }
-            if (next !== confirm) {
+            if (newPass !== confirmPass) {
                 showToast('New passwords do not match.', 'error');
                 return;
             }
-            appState.registrations.forEach(r => {
-                if (r.email === activeStudentEmail) {
-                    r.password = next;
-                    r.updatedAt = Date.now();
-                }
+            studentRegs.forEach(r => {
+                r.password = newPass;
+                r.updatedAt = Date.now();
             });
             e.target.reset();
             saveState();
-            showToast('Your password has been updated!', 'success');
+            showToast('Portal password updated!', 'success');
+        }
+
+        function handleStudentTestimonySubmit(e) {
+            e.preventDefault();
+            if (!activeStudentEmail) return;
+            const primary = (appState.registrations || []).find(r => r.email.toLowerCase() === activeStudentEmail.toLowerCase());
+            if (!primary) return;
+
+            const programId = document.getElementById('stest-program').value;
+            const role = document.getElementById('stest-role').value.trim() || primary.occupation || primary.location || 'Cohort Alumni';
+            const message = document.getElementById('stest-message').value.trim();
+
+            appState.testimonies = appState.testimonies || [];
+            appState.testimonies.unshift({
+                id: 'test-' + Date.now(),
+                studentName: primary.name,
+                studentEmail: primary.email,
+                role,
+                programId,
+                photo: primary.profilePhoto || '',
+                message,
+                createdAt: new Date().toISOString().slice(0, 10)
+            });
+
+            e.target.reset();
+            saveState();
+            renderStudentMyTestimonies();
+            showToast('Your testimony is now live on the Home Page slider!', 'success');
+        }
+
+        function renderStudentMyTestimonies() {
+            const box = document.getElementById('sdash-my-testimonies-list');
+            if (!box) return;
+            const mine = (appState.testimonies || []).filter(t => (t.studentEmail || '').toLowerCase() === activeStudentEmail.toLowerCase());
+            if (!mine.length) {
+                box.innerHTML = `<div class="p-5 rounded-2xl bg-white border border-slate-200 text-xs text-slate-500">You haven't posted a testimony yet. Share your experience using the form!</div>`;
+                return;
+            }
+            box.innerHTML = mine.map(t => `
+                <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-indigo-600">${escapeHtml(t.role)}</span>
+                        <span class="text-slate-400">${escapeHtml(t.createdAt)}</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-700 italic">"${escapeHtml(t.message)}"</p>
+                </div>
+            `).join('');
+        }
+
+        function renderHomeTestimonies() {
+            const container = document.getElementById('home-testimonies-slider');
+            const dots = document.getElementById('home-testimonies-dots');
+            if (!container) return;
+            const list = appState.testimonies || [];
+            if (!list.length) {
+                container.innerHTML = `<div class="col-span-full text-center text-slate-400 text-sm py-8">No testimonies published yet.</div>`;
+                return;
+            }
+
+            const visibleCount = Math.min(3, list.length);
+            const items = [];
+            for (let i = 0; i < visibleCount; i++) {
+                items.push(list[(testimonySlideIndex + i) % list.length]);
+            }
+
+            container.innerHTML = items.map(t => {
+                const prog = (appState.programs || []).find(p => p.id === t.programId);
+                return `
+                    <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-6 flex flex-col justify-between space-y-5">
+                        <p class="text-sm text-slate-200 leading-relaxed italic">"${escapeHtml(t.message)}"</p>
+                        <div class="flex items-center gap-3 pt-3 border-t border-white/10">
+                            ${t.photo
+                                ? `<img src="${t.photo}" alt="${escapeHtml(t.studentName)}" class="w-11 h-11 rounded-full object-cover border border-amber-400 shrink-0">`
+                                : `<div class="w-11 h-11 rounded-full rainbow-bar flex items-center justify-center font-extrabold text-xs text-white shrink-0">${escapeHtml((t.studentName || 'ST').slice(0, 2).toUpperCase())}</div>`}
+                            <div class="min-w-0">
+                                <h4 class="font-display font-extrabold text-sm text-white truncate">${escapeHtml(t.studentName)}</h4>
+                                <p class="text-[11px] text-amber-300 truncate">${escapeHtml(t.role || '')}</p>
+                                ${prog ? `<p class="text-[10px] text-slate-400 truncate">${escapeHtml(prog.title)}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (dots) {
+                dots.innerHTML = list.map((_, idx) => `
+                    <button onclick="goToTestimonySlide(${idx})" class="h-2 rounded-full transition-all ${idx === testimonySlideIndex % list.length ? 'w-7 bg-amber-400' : 'w-2 bg-white/25'}" aria-label="Slide ${idx + 1}"></button>
+                `).join('');
+            }
+        }
+
+        function nextTestimonySlide() {
+            const len = (appState.testimonies || []).length;
+            if (!len) return;
+            testimonySlideIndex = (testimonySlideIndex + 1) % len;
+            renderHomeTestimonies();
+        }
+
+        function prevTestimonySlide() {
+            const len = (appState.testimonies || []).length;
+            if (!len) return;
+            testimonySlideIndex = (testimonySlideIndex - 1 + len) % len;
+            renderHomeTestimonies();
+        }
+
+        function goToTestimonySlide(idx) {
+            testimonySlideIndex = idx;
+            renderHomeTestimonies();
         }
 
         // =========================================================
-        // ADMINISTRATOR BACKEND LOGIC
+        // ADMINISTRATOR PORTAL LOGIC
         // =========================================================
         function openAdminModal() {
-            document.getElementById('admin-modal').classList.remove('hidden');
+            openModal('admin-modal');
+            updateAdminAuthViews();
+        }
+
+        function updateAdminAuthViews() {
+            const loginView = document.getElementById('admin-login-view');
+            const dashView = document.getElementById('admin-dashboard-view');
+            const logoutBtn = document.getElementById('admin-logout-btn');
+            const headerLabel = document.getElementById('header-admin-btn-label');
+
             if (isAdminLoggedIn) {
-                document.getElementById('admin-login-view').classList.add('hidden');
-                document.getElementById('admin-dashboard-view').classList.remove('hidden');
-                document.getElementById('admin-logout-btn').classList.remove('hidden');
+                loginView.classList.add('hidden');
+                dashView.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+                if (headerLabel) headerLabel.textContent = 'Admin (Active)';
                 renderAdminDashboard();
             } else {
-                document.getElementById('admin-login-view').classList.remove('hidden');
-                document.getElementById('admin-dashboard-view').classList.add('hidden');
-                document.getElementById('admin-logout-btn').classList.add('hidden');
+                loginView.classList.remove('hidden');
+                dashView.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                if (headerLabel) headerLabel.textContent = 'Admin';
             }
-            lucide.createIcons();
         }
 
         function handleAdminLogin(e) {
             e.preventDefault();
-            const pass = document.getElementById('admin-passcode-input').value;
-            if (pass === appState.adminPasscode) {
-                isAdminLoggedIn = true;
-                localStorage.setItem(ADMIN_SESSION_KEY, 'true');
-                document.getElementById('admin-passcode-input').value = '';
-                document.getElementById('admin-login-view').classList.add('hidden');
-                document.getElementById('admin-dashboard-view').classList.remove('hidden');
-                document.getElementById('admin-logout-btn').classList.remove('hidden');
-                updateHeaderAdminButton();
-                renderAdminDashboard();
-                showToast('Administrator access unlocked (session stays signed in).', 'success');
-            } else {
-                showToast('Invalid Administrator passcode.', 'error');
+            const code = document.getElementById('admin-passcode-input').value.trim();
+            if (code !== (appState.adminPasscode || 'LHCI2026')) {
+                showToast('Invalid Administrator Passcode.', 'error');
+                return;
             }
+            isAdminLoggedIn = true;
+            localStorage.setItem(ADMIN_SESSION_KEY, 'true');
+            document.getElementById('admin-passcode-input').value = '';
+            updateAdminAuthViews();
+            showToast('Welcome to Administrator Control Center!', 'success');
         }
 
         function logoutAdmin() {
             isAdminLoggedIn = false;
             localStorage.removeItem(ADMIN_SESSION_KEY);
-            updateHeaderAdminButton();
+            updateAdminAuthViews();
             closeModal('admin-modal');
-            showToast('Signed out of Administrator Control Center.', 'info');
+            showToast('Administrator signed out.', 'info');
         }
 
-        function switchAdminTab(tabName) {
+        function switchAdminTab(tabKey) {
             document.querySelectorAll('.atab-panel').forEach(p => p.classList.add('hidden'));
-            document.querySelectorAll('.atab-btn').forEach(b => {
-                b.classList.remove('bg-slate-900', 'text-white');
-                b.classList.add('bg-slate-100', 'text-slate-700');
+            document.querySelectorAll('.atab-btn').forEach(btn => {
+                btn.className = 'atab-btn px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold whitespace-nowrap';
             });
-            document.getElementById('atab-' + tabName).classList.remove('hidden');
-            const activeBtn = document.getElementById('atab-btn-' + tabName);
-            activeBtn.classList.remove('bg-slate-100', 'text-slate-700');
-            activeBtn.classList.add('bg-slate-900', 'text-white');
-            lucide.createIcons();
+            const panel = document.getElementById(`atab-${tabKey}`);
+            const btn = document.getElementById(`atab-btn-${tabKey}`);
+            if (panel) panel.classList.remove('hidden');
+            if (btn) btn.className = 'atab-btn px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold whitespace-nowrap';
         }
 
         function renderAdminDashboard() {
-            document.getElementById('admin-stat-regs').textContent = appState.registrations.length;
-            const onlineStudents = appState.registrations.filter(r => r.isLoggedIn || (activeStudentEmail && r.email === activeStudentEmail)).length;
-            document.getElementById('admin-stat-online').textContent = onlineStudents;
-            document.getElementById('admin-stat-paid').textContent = appState.registrations.filter(r => r.paymentApproved).length;
-            document.getElementById('admin-stat-progs').textContent = appState.programs.length;
-            document.getElementById('admin-stat-media').textContent = appState.videos.length + appState.resources.length;
+            const regs = appState.registrations || [];
+            const progs = appState.programs || [];
+            const mediaCount = (appState.videos || []).length + (appState.resources || []).length;
 
+            document.getElementById('admin-stat-regs').textContent = regs.length;
+            document.getElementById('admin-stat-online').textContent = regs.filter(r => r.isLoggedIn).length;
+            document.getElementById('admin-stat-paid').textContent = regs.filter(r => r.paymentApproved).length;
+            document.getElementById('admin-stat-progs').textContent = progs.length;
+            document.getElementById('admin-stat-media').textContent = mediaCount;
+
+            populateProgramDropdowns();
             renderAdminRegistrations();
-            renderAdminPrograms();
-            renderAdminVideos();
-            renderAdminResources();
-            renderAdminTestimonies();
-            renderAdminTeam();
-            populateAdminSettingsForms();
-            renderAdminSecurityLogs();
+            renderAdminProgramsList();
+            renderAdminVideosList();
+            renderAdminResourcesList();
+            renderAdminTestimoniesList();
+            populateAdminBrandingAndAboutForms();
+            renderAdminActivityLogs();
         }
 
         function renderAdminRegistrations() {
-            const q = (document.getElementById('admin-reg-search').value || '').toLowerCase();
-            const list = appState.registrations.filter(r =>
-                r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
+            const tbody = document.getElementById('admin-registrations-tbody');
+            if (!tbody) return;
+            const query = (document.getElementById('admin-reg-search')?.value || '').trim().toLowerCase();
+            const filtered = (appState.registrations || []).filter(r =>
+                !query ||
+                (r.name || '').toLowerCase().includes(query) ||
+                (r.email || '').toLowerCase().includes(query) ||
+                (r.paymentRef || '').toLowerCase().includes(query)
             );
 
-            document.getElementById('admin-registrations-tbody').innerHTML = list.map(r => {
-                const prog = appState.programs.find(p => p.id === r.programId);
-                const isCurrentlyOnline = r.isLoggedIn || (activeStudentEmail && r.email === activeStudentEmail);
-                const initials = (r.name || 'ST').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">No student registrations found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(reg => {
+                const prog = (appState.programs || []).find(p => p.id === reg.programId);
                 return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3.5">
-                            <div class="flex items-start gap-2.5">
-                                ${r.profilePhoto
-                                    ? `<img src="${r.profilePhoto}" alt="${escapeHtml(r.name)}" class="w-9 h-9 rounded-full object-cover border border-slate-300 shrink-0">`
-                                    : `<div class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-[11px] shrink-0">${initials}</div>`
-                                }
+                    <tr class="hover:bg-slate-50/80">
+                        <td class="p-3.5 align-top">
+                            <div class="flex items-center gap-2.5">
+                                ${reg.profilePhoto
+                                    ? `<img src="${reg.profilePhoto}" class="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0">`
+                                    : `<div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-extrabold flex items-center justify-center shrink-0">${escapeHtml((reg.name || 'S').slice(0, 2).toUpperCase())}</div>`}
                                 <div>
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="font-bold text-slate-900">${escapeHtml(r.name)}</span>
-                                        ${isCurrentlyOnline
-                                            ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Logged In</span>`
-                                            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">Offline</span>`
-                                        }
-                                    </div>
-                                    <div class="text-slate-500">${escapeHtml(r.email)} • ${escapeHtml(r.phone)}</div>
-                                    <div class="text-[11px] text-slate-400">
-                                        ${escapeHtml(r.location || '')} ${r.occupation ? '• ' + escapeHtml(r.occupation) : ''}
-                                        ${r.lastLoginAt ? `<br><span class="text-indigo-600 font-semibold">Last Login: ${escapeHtml(r.lastLoginAt)}</span>` : ''}
+                                    <div class="font-extrabold text-slate-900">${escapeHtml(reg.name)}</div>
+                                    <div class="text-[11px] text-slate-500">${escapeHtml(reg.email)} &bull; ${escapeHtml(reg.phone || '')}</div>
+                                    <div class="mt-1">
+                                        ${reg.isLoggedIn
+                                            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">Logged In (${escapeHtml(reg.lastLoginAt || 'Active')})</span>`
+                                            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600">Last seen: ${escapeHtml(reg.lastLoginAt || reg.registeredAt)}</span>`}
                                     </div>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-3.5 font-semibold text-slate-700">${escapeHtml(prog ? prog.title : r.programId)}</td>
-                        <td class="p-3.5">
-                            <div class="font-mono text-[11px] text-slate-600 mb-1">${escapeHtml(r.paymentRef)}</div>
-                            <button onclick="viewStudentReceipt('${r.id}')" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px]">
-                                View Receipt (${escapeHtml(r.receiptName)})
+                        <td class="p-3.5 align-top font-semibold text-slate-700">
+                            ${escapeHtml(prog?.title || reg.programId)}
+                            <div class="text-[11px] text-slate-400 mt-0.5">Reg: ${escapeHtml(reg.registeredAt)}</div>
+                        </td>
+                        <td class="p-3.5 align-top">
+                            <div class="font-mono text-[11px] font-bold text-slate-800">${escapeHtml(reg.paymentRef || 'N/A')}</div>
+                            <button onclick="viewStudentReceipt('${reg.id}')" class="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:underline">
+                                View Receipt (${escapeHtml(reg.receiptName || 'File')})
                             </button>
                         </td>
-                        <td class="p-3.5 space-y-1.5">
-                            ${r.paymentApproved ? `
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[11px]">
-                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Paid &amp; Zoom Unlocked
-                                </span>
-                                <div class="flex flex-wrap gap-1.5 pt-1">
-                                    <button onclick="sendZoomEmailToStudent('${r.id}')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[10px]">
-                                        Re-send Zoom Email
-                                    </button>
-                                    <button onclick="revokeStudentPayment('${r.id}')" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[10px]">
-                                        Revoke
-                                    </button>
-                                </div>
-                            ` : `
-                                <button onclick="approveStudentPaymentAndEmail('${r.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-sm flex items-center gap-1">
-                                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Approve Payment &amp; Send Zoom Email
-                                </button>
-                            `}
+                        <td class="p-3.5 align-top">
+                            ${reg.paymentApproved
+                                ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">Approved (${escapeHtml(reg.paymentApprovedAt || 'Yes')})</span>`
+                                : `<button onclick="approveStudentPayment('${reg.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold shadow-sm">Approve Payment &amp; Send Zoom Email</button>`}
                         </td>
-                        <td class="p-3.5">
-                            <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-indigo-600 text-white font-bold text-[11px] cursor-pointer">
-                                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-                                <span>${r.certificateApproved ? 'Replace Cert' : 'Upload Cert'}</span>
-                                <input type="file" accept=".pdf,image/*" class="hidden" onchange="handleAdminUploadCertificate(event, '${r.id}')">
+                        <td class="p-3.5 align-top">
+                            <label class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 cursor-pointer text-[11px] font-bold text-slate-700">
+                                <span>${reg.certificateApproved ? 'Replace Cert' : 'Upload Cert'}</span>
+                                <input type="file" accept="image/*,.pdf" class="hidden" onchange="handleAdminUploadCertificate(event, '${reg.id}')">
                             </label>
-                            ${r.certificateApproved ? `<div class="text-[10px] text-emerald-700 font-bold mt-1 truncate max-w-[140px]">${escapeHtml(r.certificateFileName)}</div>` : ''}
+                            ${reg.certificateApproved ? `<div class="text-[10px] text-emerald-700 font-bold mt-1">Issued: ${escapeHtml(reg.certificateFileName || 'Certificate')}</div>` : ''}
                         </td>
-                        <td class="p-3.5 space-y-1">
-                            ${r.certificateApproved
-                                ? `<button onclick="removeUploadedCertificate('${r.id}')" class="block text-amber-700 hover:underline font-bold">Revoke Cert</button>`
-                                : ''
-                            }
-                            <button onclick="deleteRegistration('${r.id}')" class="block text-rose-600 hover:underline font-bold">Delete</button>
+                        <td class="p-3.5 align-top">
+                            <button onclick="deleteRegistration('${reg.id}')" class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold">Delete</button>
                         </td>
                     </tr>
                 `;
             }).join('');
-            lucide.createIcons();
-        }
-
-        function approveStudentPaymentAndEmail(regId) {
-            const reg = appState.registrations.find(r => r.id === regId);
-            if (!reg) return;
-            reg.paymentApproved = true;
-            reg.paymentApprovedAt = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            reg.updatedAt = Date.now();
-            saveState();
-            showToast(`Payment approved for ${reg.name}! Zoom access unlocked & email prepared.`, 'success');
-            sendZoomEmailToStudent(regId);
-        }
-
-        function sendZoomEmailToStudent(regId) {
-            const reg = appState.registrations.find(r => r.id === regId);
-            if (!reg) return;
-            const prog = appState.programs.find(p => p.id === reg.programId);
-            const progTitle = prog ? prog.title : reg.programId;
-            const zoomLink = (prog && prog.zoomLink) || 'https://zoom.us';
-            const zoomPasscode = (prog && prog.zoomPasscode) || 'Contact Admin';
-            const zoomDate = (prog && prog.zoomDate) || 'Upcoming Cohort Schedule';
-            const zoomTime = (prog && prog.zoomTime) || 'Scheduled Cohort Time';
-            const zoomInstructions = (prog && prog.zoomInstructions) || 'Please join 10 minutes early with your full registered name.';
-
-            const subject = `Payment Confirmed & Live Zoom Class Details — ${progTitle} (${appState.branding.orgName})`;
-            const body =
-`Dear ${reg.name},
-
-Congratulations! Your tuition payment (Ref: ${reg.paymentRef}) for "${progTitle}" at ${appState.branding.orgName} has been verified and approved.
-
-Below are your official details to join the live Zoom training class:
-
-• Program: ${progTitle}
-• Zoom Meeting Link: ${zoomLink}
-• Zoom Passcode: ${zoomPasscode}
-• Class Date(s): ${zoomDate}
-• Class Time: ${zoomTime}
-
-JOINING INSTRUCTIONS:
-${zoomInstructions}
-
-You can also sign into your Student Portal anytime using your registered email (${reg.email}) to view your Zoom link, stream class recordings, download study files, and claim your certificate.
-
-Warm regards,
-Admissions & Training Desk
-${appState.branding.orgName}`;
-
-            const mailtoUrl = `mailto:${encodeURIComponent(reg.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.open(mailtoUrl, '_blank');
-        }
-
-        function revokeStudentPayment(regId) {
-            const reg = appState.registrations.find(r => r.id === regId);
-            if (!reg) return;
-            reg.paymentApproved = false;
-            reg.paymentApprovedAt = null;
-            reg.updatedAt = Date.now();
-            saveState();
-            showToast(`Payment approval revoked for ${reg.name}.`, 'info');
         }
 
         function viewStudentReceipt(regId) {
-            const reg = appState.registrations.find(r => r.id === regId);
+            const reg = (appState.registrations || []).find(r => r.id === regId);
             if (!reg) return;
-            document.getElementById('rv-student-meta').textContent = `${reg.name} (${reg.email}) • Ref: ${reg.paymentRef}`;
-            const container = document.getElementById('rv-preview-container');
-            const dlBtn = document.getElementById('rv-download-btn');
-
+            document.getElementById('rv-student-meta').textContent = `${reg.name} (${reg.email}) — Ref: ${reg.paymentRef}`;
+            const box = document.getElementById('rv-preview-container');
+            const dl = document.getElementById('rv-download-btn');
             if (reg.receiptDataUrl) {
-                dlBtn.href = reg.receiptDataUrl;
-                dlBtn.download = reg.receiptName || 'receipt';
+                dl.href = reg.receiptDataUrl;
+                dl.download = reg.receiptName || 'receipt';
                 if (reg.receiptDataUrl.startsWith('data:application/pdf')) {
-                    container.innerHTML = `<iframe src="${reg.receiptDataUrl}" class="w-full h-96 rounded-xl"></iframe>`;
+                    box.innerHTML = `<iframe src="${reg.receiptDataUrl}" class="w-full h-96 rounded-xl"></iframe>`;
                 } else {
-                    container.innerHTML = `<img src="${reg.receiptDataUrl}" alt="Receipt" class="max-h-96 rounded-xl shadow">`;
+                    box.innerHTML = `<img src="${reg.receiptDataUrl}" alt="Receipt" class="max-h-96 rounded-xl shadow">`;
                 }
             } else {
-                const fallback = createFallbackTextDataUrl('Receipt Record: ' + reg.receiptName, `Student: ${reg.name}\nPayment Ref: ${reg.paymentRef}`);
-                dlBtn.href = fallback;
-                dlBtn.download = reg.receiptName || 'receipt.txt';
-                container.innerHTML = `<div class="p-6 text-center text-xs text-slate-600">Demo receipt file: <strong>${escapeHtml(reg.receiptName)}</strong> (Ref: ${escapeHtml(reg.paymentRef)})</div>`;
+                dl.href = '#';
+                box.innerHTML = `<p class="text-xs text-slate-600 py-8">Demo record receipt filename: <strong>${escapeHtml(reg.receiptName || 'Receipt.png')}</strong></p>`;
             }
-            document.getElementById('receipt-viewer-modal').classList.remove('hidden');
+            openModal('receipt-viewer-modal');
         }
 
-        function handleAdminUploadCertificate(e, regId) {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 2.5 * 1024 * 1024) {
-                showToast('Please keep certificate files under 2.5MB.', 'error');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = () => {
-                const reg = appState.registrations.find(r => r.id === regId);
-                if (!reg) return;
-                reg.certificateApproved = true;
-                reg.certificateFileName = file.name;
-                reg.certificateDataUrl = reader.result;
-                reg.approvedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                reg.updatedAt = Date.now();
-                saveState();
-                showToast(`Certificate uploaded & activated for ${reg.name}!`, 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removeUploadedCertificate(regId) {
-            const reg = appState.registrations.find(r => r.id === regId);
+        function approveStudentPayment(regId) {
+            const reg = (appState.registrations || []).find(r => r.id === regId);
             if (!reg) return;
-            reg.certificateApproved = false;
-            reg.certificateFileName = '';
-            reg.certificateDataUrl = '';
-            reg.approvedDate = null;
+            const prog = (appState.programs || []).find(p => p.id === reg.programId) || {};
+
+            reg.paymentApproved = true;
+            reg.paymentApprovedAt = new Date().toLocaleDateString();
             reg.updatedAt = Date.now();
             saveState();
-            showToast(`Certificate revoked for ${reg.name}.`, 'info');
+
+            const subject = encodeURIComponent(`Payment Approved & Zoom Classroom Details — ${prog.title || 'LHCI Training'}`);
+            const body = encodeURIComponent(
+                `Dear ${reg.name},\n\n` +
+                `Congratulations! Your payment for "${prog.title || 'Training Program'}" at LIGHT HOUSE CREATIVES INTERNATIONAL has been verified and approved.\n\n` +
+                `Here are your Zoom Classroom joining details:\n` +
+                `• Zoom Link: ${prog.zoomLink || 'Available in your Student Portal'}\n` +
+                `• Passcode: ${prog.zoomPasscode || 'N/A'}\n` +
+                `• Date(s): ${prog.zoomDate || 'See Student Portal'}\n` +
+                `• Time: ${prog.zoomTime || 'See Student Portal'}\n\n` +
+                `Instructions:\n${prog.zoomInstructions || 'Please join 10 minutes before class starts using your registered full name.'}\n\n` +
+                `You can also log into your Student Portal anytime to launch the Zoom class, watch replays, and download your certificate.\n\n` +
+                `Warm regards,\nLIGHT HOUSE CREATIVES INTERNATIONAL`
+            );
+            window.open(`mailto:${encodeURIComponent(reg.email)}?subject=${subject}&body=${body}`, '_blank');
+            showToast(`Payment approved for ${reg.name}! Zoom access unlocked.`, 'success');
+        }
+
+        async function handleAdminUploadCertificate(e, regId) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reg = (appState.registrations || []).find(r => r.id === regId);
+            if (!reg) return;
+            const dataUrl = await compressImageDataUrl(file, 900, 0.85);
+            reg.certificateApproved = true;
+            reg.certificateFileName = file.name;
+            reg.certificateDataUrl = dataUrl;
+            reg.approvedDate = new Date().toLocaleDateString();
+            reg.updatedAt = Date.now();
+            saveState();
+            showToast(`Certificate issued to ${reg.name}!`, 'success');
         }
 
         function deleteRegistration(regId) {
-            appState.registrations = appState.registrations.filter(r => r.id !== regId);
+            appState.registrations = (appState.registrations || []).filter(r => r.id !== regId);
             saveState();
-            showToast('Registration record removed.', 'info');
+            showToast('Registration record deleted.', 'info');
         }
 
-        // Admin Programs CRUD
-        function renderAdminPrograms() {
-            document.getElementById('admin-programs-list').innerHTML = appState.programs.map(p => `
-                <div class="p-4 rounded-2xl border border-slate-200 flex items-start justify-between gap-3">
-                    <div>
-                        <span class="text-[11px] font-extrabold text-indigo-600">${escapeHtml(p.year)} • ${escapeHtml(p.status)} • ${escapeHtml(p.fee)}</span>
-                        <h5 class="font-bold text-sm text-slate-900">${escapeHtml(p.title)}</h5>
-                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${escapeHtml(p.description)}</p>
-                        <p class="text-[11px] text-blue-700 font-semibold mt-1">Zoom Passcode: ${escapeHtml(p.zoomPasscode || 'Not Set')} • ${escapeHtml(p.zoomDate || '')}</p>
-                    </div>
-                    <div class="flex flex-col gap-1 shrink-0 text-xs font-bold">
-                        <button onclick="editAdminProgram('${p.id}')" class="text-indigo-600 hover:underline">Edit</button>
-                        <button onclick="deleteAdminProgram('${p.id}')" class="text-rose-600 hover:underline">Delete</button>
-                    </div>
-                </div>
-            `).join('');
+        function handleAdminSaveProgram(e) {
+            e.preventDefault();
+            const existingId = document.getElementById('aprog-id').value;
+            const progData = {
+                id: existingId || ('prog-' + Date.now()),
+                title: document.getElementById('aprog-title').value.trim(),
+                year: document.getElementById('aprog-year').value.trim(),
+                status: document.getElementById('aprog-status').value,
+                duration: document.getElementById('aprog-duration').value.trim(),
+                fee: document.getElementById('aprog-fee').value.trim(),
+                image: document.getElementById('aprog-image').value.trim(),
+                zoomLink: document.getElementById('aprog-zoom-link').value.trim(),
+                zoomPasscode: document.getElementById('aprog-zoom-passcode').value.trim(),
+                zoomDate: document.getElementById('aprog-zoom-date').value.trim(),
+                zoomTime: document.getElementById('aprog-zoom-time').value.trim(),
+                zoomInstructions: document.getElementById('aprog-zoom-instructions').value.trim(),
+                paymentDetails: document.getElementById('aprog-payment-details').value.trim(),
+                description: document.getElementById('aprog-desc').value.trim()
+            };
+
+            appState.programs = appState.programs || [];
+            const idx = appState.programs.findIndex(p => p.id === progData.id);
+            if (idx >= 0) appState.programs[idx] = progData;
+            else appState.programs.unshift(progData);
+
+            resetAdminProgramForm();
+            saveState();
+            showToast('Training program saved!', 'success');
         }
 
         function editAdminProgram(id) {
-            const p = appState.programs.find(item => item.id === id);
+            const p = (appState.programs || []).find(item => item.id === id);
             if (!p) return;
             document.getElementById('aprog-id').value = p.id;
-            document.getElementById('aprog-title').value = p.title;
-            document.getElementById('aprog-year').value = p.year;
-            document.getElementById('aprog-status').value = p.status;
-            document.getElementById('aprog-duration').value = p.duration;
-            document.getElementById('aprog-fee').value = p.fee;
+            document.getElementById('aprog-title').value = p.title || '';
+            document.getElementById('aprog-year').value = p.year || '';
+            document.getElementById('aprog-status').value = p.status || 'Open';
+            document.getElementById('aprog-duration').value = p.duration || '';
+            document.getElementById('aprog-fee').value = p.fee || '';
             document.getElementById('aprog-image').value = p.image || '';
             document.getElementById('aprog-zoom-link').value = p.zoomLink || '';
             document.getElementById('aprog-zoom-passcode').value = p.zoomPasscode || '';
@@ -2990,339 +2757,316 @@ ${appState.branding.orgName}`;
             document.getElementById('aprog-zoom-time').value = p.zoomTime || '';
             document.getElementById('aprog-zoom-instructions').value = p.zoomInstructions || '';
             document.getElementById('aprog-payment-details').value = p.paymentDetails || '';
-            document.getElementById('aprog-desc').value = p.description;
+            document.getElementById('aprog-desc').value = p.description || '';
         }
 
         function resetAdminProgramForm() {
-            document.getElementById('admin-program-form').reset();
-            document.getElementById('aprog-id').value = '';
-        }
-
-        function handleAdminSaveProgram(e) {
-            e.preventDefault();
-            const existingId = document.getElementById('aprog-id').value;
-            const progData = {
-                id: existingId || 'prog-' + Date.now(),
-                title: document.getElementById('aprog-title').value.trim(),
-                year: document.getElementById('aprog-year').value.trim(),
-                status: document.getElementById('aprog-status').value,
-                duration: document.getElementById('aprog-duration').value.trim(),
-                fee: document.getElementById('aprog-fee').value.trim(),
-                image: document.getElementById('aprog-image').value.trim() || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80',
-                zoomLink: document.getElementById('aprog-zoom-link').value.trim() || 'https://zoom.us',
-                zoomPasscode: document.getElementById('aprog-zoom-passcode').value.trim() || 'LHCI2026',
-                zoomDate: document.getElementById('aprog-zoom-date').value.trim() || 'Upcoming Cohort Date',
-                zoomTime: document.getElementById('aprog-zoom-time').value.trim() || '4:00 PM WAT',
-                zoomInstructions: document.getElementById('aprog-zoom-instructions').value.trim() || 'Join 10 minutes early with your registered full name.',
-                paymentDetails: document.getElementById('aprog-payment-details').value.trim() || 'Bank: First Bank | Account Name: LIGHT HOUSE CREATIVES INTERNATIONAL | Account No: 2039485710',
-                description: document.getElementById('aprog-desc').value.trim()
-            };
-
-            if (existingId) {
-                const idx = appState.programs.findIndex(p => p.id === existingId);
-                if (idx > -1) appState.programs[idx] = progData;
-            } else {
-                appState.programs.unshift(progData);
-            }
-            resetAdminProgramForm();
-            saveState();
-            showToast('Training program & Zoom details saved!', 'success');
+            document.getElementById('admin-program-form')?.reset();
+            const idEl = document.getElementById('aprog-id');
+            if (idEl) idEl.value = '';
         }
 
         function deleteAdminProgram(id) {
-            appState.programs = appState.programs.filter(p => p.id !== id);
+            appState.programs = (appState.programs || []).filter(p => p.id !== id);
             saveState();
-            showToast('Program deleted.', 'info');
+            showToast('Training program removed.', 'info');
         }
 
-        // Admin Videos CRUD
-        function renderAdminVideos() {
-            document.getElementById('admin-videos-list').innerHTML = appState.videos.map(v => {
-                const prog = appState.programs.find(p => p.id === v.programId);
-                return `
-                    <div class="p-4 rounded-2xl border border-slate-200 flex items-start justify-between gap-3">
-                        <div>
-                            <span class="text-[11px] font-bold text-rose-600">${escapeHtml(prog ? prog.title : 'General')} • ${escapeHtml(v.duration || 'Video')}</span>
-                            <h5 class="font-bold text-sm text-slate-900">${escapeHtml(v.title)}</h5>
-                            <p class="text-xs text-slate-500 mt-1">${escapeHtml(v.notes || '')}</p>
-                        </div>
-                        <button onclick="deleteAdminVideo('${v.id}')" class="text-xs font-bold text-rose-600 hover:underline shrink-0">Delete</button>
+        function renderAdminProgramsList() {
+            const box = document.getElementById('admin-programs-list');
+            if (!box) return;
+            box.innerHTML = (appState.programs || []).map(p => `
+                <div class="p-4 rounded-2xl bg-white border border-slate-200 flex items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-extrabold uppercase text-indigo-600">${escapeHtml(p.status)} &bull; ${escapeHtml(p.fee)}</span>
+                        <h5 class="font-display font-extrabold text-sm text-slate-900">${escapeHtml(p.title)}</h5>
+                        <p class="text-[11px] text-slate-500">Zoom: ${escapeHtml(p.zoomLink || 'Not set')} | Passcode: ${escapeHtml(p.zoomPasscode || 'N/A')}</p>
                     </div>
-                `;
-            }).join('');
-        }
-
-        function handleAdminAddVideo(e) {
-            e.preventDefault();
-            const title = document.getElementById('avid-title').value.trim();
-            const programId = document.getElementById('avid-program').value;
-            const duration = document.getElementById('avid-duration').value.trim() || 'HD Session';
-            const url = document.getElementById('avid-url').value.trim();
-            const notes = document.getElementById('avid-notes').value.trim();
-            const file = document.getElementById('avid-file').files[0];
-
-            const finishSave = (finalUrl) => {
-                if (!finalUrl) {
-                    showToast('Please enter a video link or select a video file.', 'error');
-                    return;
-                }
-                appState.videos.unshift({
-                    id: 'vid-' + Date.now(),
-                    programId,
-                    title,
-                    duration,
-                    url: finalUrl,
-                    notes
-                });
-                e.target.reset();
-                document.getElementById('avid-file-label').textContent = 'Or Upload MP4 File';
-                saveState();
-                showToast('Class video published!', 'success');
-            };
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = () => finishSave(reader.result);
-                reader.readAsDataURL(file);
-            } else {
-                finishSave(url);
-            }
-        }
-
-        function deleteAdminVideo(id) {
-            appState.videos = appState.videos.filter(v => v.id !== id);
-            saveState();
-            showToast('Video removed.', 'info');
-        }
-
-        // Admin Audio, Files & Study Documents CRUD
-        function renderAdminResources() {
-            document.getElementById('admin-resources-list').innerHTML = appState.resources.map(r => {
-                const prog = appState.programs.find(p => p.id === r.programId);
-                return `
-                    <div class="p-4 rounded-2xl border border-slate-200 flex items-start justify-between gap-3">
-                        <div>
-                            <span class="text-[11px] font-bold text-indigo-600">${escapeHtml(r.type)} • ${escapeHtml(prog ? prog.title : 'General')}</span>
-                            <h5 class="font-bold text-sm text-slate-900">${escapeHtml(r.title)}</h5>
-                            <p class="text-xs text-slate-500 mt-1">${escapeHtml(r.fileName || r.url || '')}</p>
-                        </div>
-                        <button onclick="deleteAdminResource('${r.id}')" class="text-xs font-bold text-rose-600 hover:underline shrink-0">Delete</button>
+                    <div class="flex gap-1.5 shrink-0">
+                        <button onclick="editAdminProgram('${p.id}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold">Edit</button>
+                        <button onclick="deleteAdminProgram('${p.id}')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold">Delete</button>
                     </div>
-                `;
-            }).join('');
-        }
-
-        function handleAdminAddResource(e) {
-            e.preventDefault();
-            const title = document.getElementById('ares-title').value.trim();
-            const programId = document.getElementById('ares-program').value;
-            const type = document.getElementById('ares-type').value;
-            const url = document.getElementById('ares-url').value.trim();
-            const description = document.getElementById('ares-desc').value.trim();
-            const file = document.getElementById('ares-file').files[0];
-
-            const finishSave = (dataUrl, fName) => {
-                appState.resources.unshift({
-                    id: 'res-' + Date.now(),
-                    programId,
-                    title,
-                    type,
-                    url,
-                    fileDataUrl: dataUrl || '',
-                    fileName: fName || title.replace(/\s+/g, '_') + (type === 'Audio' ? '.mp3' : '.pdf'),
-                    description
-                });
-                e.target.reset();
-                document.getElementById('ares-file-label').textContent = 'Or Upload Audio/File';
-                saveState();
-                showToast(`${type} resource published to Student Portal!`, 'success');
-            };
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = () => finishSave(reader.result, file.name);
-                reader.readAsDataURL(file);
-            } else {
-                finishSave('', '');
-            }
-        }
-
-        function deleteAdminResource(id) {
-            appState.resources = appState.resources.filter(r => r.id !== id);
-            saveState();
-            showToast('Study resource removed.', 'info');
-        }
-
-        // Admin Testimonies Moderation
-        function renderAdminTestimonies() {
-            const container = document.getElementById('admin-testimonies-list');
-            if (!container) return;
-            const items = appState.testimonies || [];
-            if (items.length === 0) {
-                container.innerHTML = `<div class="col-span-2 p-5 rounded-2xl border border-slate-200 text-xs text-slate-500">No student testimonies submitted yet.</div>`;
-                return;
-            }
-            container.innerHTML = items.map(t => {
-                const prog = appState.programs.find(p => p.id === t.programId);
-                return `
-                    <div class="p-4 rounded-2xl border border-slate-200 flex items-start justify-between gap-3">
-                        <div class="space-y-1">
-                            <span class="text-[11px] font-bold text-indigo-600">${escapeHtml(t.studentName)} • ${escapeHtml(prog ? prog.title : 'Cohort')}</span>
-                            <p class="text-xs text-slate-700 italic">"${escapeHtml(t.message)}"</p>
-                            <p class="text-[10px] text-slate-400">${escapeHtml(t.role || '')} • ${escapeHtml(t.createdAt || '')}</p>
-                        </div>
-                        <button onclick="deleteTestimony('${t.id}')" class="text-xs font-bold text-rose-600 hover:underline shrink-0">Delete</button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Admin Branding & About Settings
-        function populateAdminSettingsForms() {
-            const b = appState.branding;
-            document.getElementById('abrand-org-name').value = b.orgName;
-            document.getElementById('abrand-hero-title').value = b.heroTitle;
-            document.getElementById('abrand-hero-sub').value = b.heroSubtitle;
-            document.getElementById('abrand-founder-name').value = b.founderName;
-            document.getElementById('abrand-founder-role').value = b.founderRole;
-            document.getElementById('abrand-founder-quote').value = b.founderQuote;
-            document.getElementById('abrand-founder-bio').value = b.founderBio;
-
-            const a = appState.about;
-            document.getElementById('aabout-mission').value = a.mission;
-            document.getElementById('aabout-vision').value = a.vision;
-            document.getElementById('aabout-values').value = a.values;
-            document.getElementById('aabout-email').value = a.email;
-            document.getElementById('aabout-phone').value = a.phone;
-            document.getElementById('aabout-address').value = a.address;
-            document.getElementById('aabout-ig').value = a.socials.instagram || '';
-            document.getElementById('aabout-yt').value = a.socials.youtube || '';
-            document.getElementById('aabout-fb').value = a.socials.facebook || '';
-            document.getElementById('aabout-li').value = a.socials.linkedin || '';
-        }
-
-        function renderAdminSecurityLogs() {
-            const emailEl = document.getElementById('asec-target-email');
-            if (emailEl) emailEl.textContent = (appState.about && appState.about.email) || 'info@lighthousecreatives.org';
-
-            const visitChk = document.getElementById('asec-notify-visit');
-            const regChk = document.getElementById('asec-notify-reg');
-            if (visitChk) visitChk.checked = appState.notifyAdminOnVisit !== false;
-            if (regChk) regChk.checked = appState.notifyAdminOnRegistration !== false;
-
-            const logList = document.getElementById('admin-activity-logs-list');
-            if (!logList) return;
-            const logs = appState.activityLogs || [];
-            if (logs.length === 0) {
-                logList.innerHTML = `<p class="py-3 text-slate-400">No visitor or registration alerts logged yet.</p>`;
-                return;
-            }
-            logList.innerHTML = logs.map(l => `
-                <div class="py-2 flex items-start justify-between gap-2">
-                    <div>
-                        <span class="font-bold ${l.type === 'registration' ? 'text-emerald-700' : 'text-indigo-700'}">${escapeHtml(l.title)}</span>
-                        <p class="text-slate-600">${escapeHtml(l.details)}</p>
-                    </div>
-                    <span class="text-[10px] text-slate-400 shrink-0">${escapeHtml(l.timestamp)}</span>
                 </div>
             `).join('');
         }
 
-        function handleAdminSaveBranding(e) {
+        async function handleAdminAddVideo(e) {
             e.preventDefault();
-            appState.branding.orgName = document.getElementById('abrand-org-name').value.trim();
-            appState.branding.heroTitle = document.getElementById('abrand-hero-title').value.trim();
-            appState.branding.heroSubtitle = document.getElementById('abrand-hero-sub').value.trim();
-            appState.branding.founderName = document.getElementById('abrand-founder-name').value.trim();
-            appState.branding.founderRole = document.getElementById('abrand-founder-role').value.trim();
-            appState.branding.founderQuote = document.getElementById('abrand-founder-quote').value.trim();
-            appState.branding.founderBio = document.getElementById('abrand-founder-bio').value.trim();
-
-            const logoFile = document.getElementById('abrand-logo-file').files[0];
-            const founderFile = document.getElementById('abrand-founder-file').files[0];
-
-            const readIfPresent = (file) => new Promise(resolve => {
-                if (!file) return resolve(null);
-                compressImageDataUrl(file, 450, 0.75).then(resolve);
+            const file = document.getElementById('avid-file')?.files?.[0];
+            let url = document.getElementById('avid-url').value.trim();
+            if (file) {
+                url = await compressImageDataUrl(file);
+            }
+            if (!url) {
+                showToast('Please provide a video link or upload an MP4 file.', 'warning');
+                return;
+            }
+            appState.videos = appState.videos || [];
+            appState.videos.unshift({
+                id: 'vid-' + Date.now(),
+                title: document.getElementById('avid-title').value.trim(),
+                programId: document.getElementById('avid-program').value,
+                duration: document.getElementById('avid-duration').value.trim() || 'HD',
+                url,
+                notes: document.getElementById('avid-notes').value.trim()
             });
+            e.target.reset();
+            document.getElementById('avid-file-label').textContent = 'Or Upload MP4 File';
+            saveState();
+            showToast('Class video published!', 'success');
+        }
 
-            Promise.all([readIfPresent(logoFile), readIfPresent(founderFile)]).then(([logoData, founderData]) => {
-                if (logoData) appState.branding.logoDataUrl = logoData;
-                if (founderData) appState.branding.founderPhoto = founderData;
-                saveState();
-                showToast('Branding, logo & founder details updated!', 'success');
+        function deleteAdminVideo(id) {
+            appState.videos = (appState.videos || []).filter(v => v.id !== id);
+            saveState();
+            showToast('Video removed.', 'info');
+        }
+
+        function renderAdminVideosList() {
+            const box = document.getElementById('admin-videos-list');
+            if (!box) return;
+            box.innerHTML = (appState.videos || []).map(v => `
+                <div class="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between gap-3">
+                    <div>
+                        <h5 class="font-bold text-xs sm:text-sm text-slate-900">${escapeHtml(v.title)}</h5>
+                        <p class="text-[11px] text-slate-500">${escapeHtml(v.duration || '')}</p>
+                    </div>
+                    <button onclick="deleteAdminVideo('${v.id}')" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 text-xs font-bold">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        async function handleAdminAddResource(e) {
+            e.preventDefault();
+            const file = document.getElementById('ares-file')?.files?.[0];
+            const url = document.getElementById('ares-url').value.trim();
+            let fileDataUrl = '';
+            let fileName = '';
+            if (file) {
+                fileDataUrl = await compressImageDataUrl(file);
+                fileName = file.name;
+            }
+            if (!url && !fileDataUrl) {
+                showToast('Please enter a resource URL or upload a file.', 'warning');
+                return;
+            }
+            appState.resources = appState.resources || [];
+            appState.resources.unshift({
+                id: 'res-' + Date.now(),
+                title: document.getElementById('ares-title').value.trim(),
+                programId: document.getElementById('ares-program').value,
+                type: document.getElementById('ares-type').value,
+                url,
+                fileDataUrl,
+                fileName,
+                description: document.getElementById('ares-desc').value.trim()
             });
+            e.target.reset();
+            document.getElementById('ares-file-label').textContent = 'Or Upload Audio/File';
+            saveState();
+            showToast('Audio / study file published!', 'success');
+        }
+
+        function deleteAdminResource(id) {
+            appState.resources = (appState.resources || []).filter(r => r.id !== id);
+            saveState();
+            showToast('Resource removed.', 'info');
+        }
+
+        function renderAdminResourcesList() {
+            const box = document.getElementById('admin-resources-list');
+            if (!box) return;
+            box.innerHTML = (appState.resources || []).map(r => `
+                <div class="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between gap-3">
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase text-indigo-600">${escapeHtml(r.type)}</span>
+                        <h5 class="font-bold text-xs sm:text-sm text-slate-900">${escapeHtml(r.title)}</h5>
+                    </div>
+                    <button onclick="deleteAdminResource('${r.id}')" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 text-xs font-bold">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function renderAdminTestimoniesList() {
+            const box = document.getElementById('admin-testimonies-list');
+            if (!box) return;
+            box.innerHTML = (appState.testimonies || []).map(t => `
+                <div class="p-4 rounded-2xl bg-white border border-slate-200 flex items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <h5 class="font-bold text-xs sm:text-sm text-slate-900">${escapeHtml(t.studentName)} <span class="text-slate-400 font-normal">(${escapeHtml(t.role || '')})</span></h5>
+                        <p class="text-xs text-slate-600 italic">"${escapeHtml(t.message)}"</p>
+                    </div>
+                    <button onclick="deleteAdminTestimony('${t.id}')" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 text-xs font-bold shrink-0">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteAdminTestimony(id) {
+            appState.testimonies = (appState.testimonies || []).filter(t => t.id !== id);
+            saveState();
+            showToast('Testimony removed from Home slider.', 'info');
+        }
+
+        function populateAdminBrandingAndAboutForms() {
+            const b = appState.branding || {};
+            const a = appState.about || {};
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val || '';
+            };
+            setVal('abrand-org-name', b.orgName);
+            setVal('abrand-hero-title', b.heroTitle);
+            setVal('abrand-hero-sub', b.heroSubtitle);
+            setVal('abrand-founder-name', b.founderName);
+            setVal('abrand-founder-role', b.founderRole);
+            setVal('abrand-founder-quote', b.founderQuote);
+            setVal('abrand-founder-bio', b.founderBio);
+
+            setVal('aabout-mission', a.mission);
+            setVal('aabout-vision', a.vision);
+            setVal('aabout-values', a.values);
+            setVal('aabout-email', a.email);
+            setVal('aabout-phone', a.phone);
+            setVal('aabout-address', a.address);
+            setVal('aabout-ig', a.socials?.instagram);
+            setVal('aabout-yt', a.socials?.youtube);
+            setVal('aabout-fb', a.socials?.facebook);
+            setVal('aabout-li', a.socials?.linkedin);
+
+            const targetEmailEl = document.getElementById('asec-target-email');
+            if (targetEmailEl) targetEmailEl.textContent = a.email || 'info@lighthousecreatives.org';
+            const visitCheck = document.getElementById('asec-notify-visit');
+            const regCheck = document.getElementById('asec-notify-reg');
+            if (visitCheck) visitCheck.checked = appState.notifyAdminOnVisit !== false;
+            if (regCheck) regCheck.checked = appState.notifyAdminOnRegistration !== false;
+            const fbInput = document.getElementById('asec-firebase-url');
+            if (fbInput) fbInput.value = getActiveCloudDbUrl();
+
+            const teamList = document.getElementById('admin-team-list');
+            if (teamList) {
+                teamList.innerHTML = (a.team || []).map(m => `
+                    <div class="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-2">
+                        <div>
+                            <div class="font-bold text-xs text-slate-900">${escapeHtml(m.name)}</div>
+                            <div class="text-[11px] text-slate-500">${escapeHtml(m.role)}</div>
+                        </div>
+                        <button onclick="deleteAdminTeamMember('${m.id}')" class="text-rose-600 text-xs font-bold">Remove</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function handleAdminSaveBranding(e) {
+            e.preventDefault();
+            const b = appState.branding;
+            b.orgName = document.getElementById('abrand-org-name').value.trim() || b.orgName;
+            b.heroTitle = document.getElementById('abrand-hero-title').value.trim() || b.heroTitle;
+            b.heroSubtitle = document.getElementById('abrand-hero-sub').value.trim() || b.heroSubtitle;
+            b.founderName = document.getElementById('abrand-founder-name').value.trim() || b.founderName;
+            b.founderRole = document.getElementById('abrand-founder-role').value.trim() || b.founderRole;
+            b.founderQuote = document.getElementById('abrand-founder-quote').value.trim() || b.founderQuote;
+            b.founderBio = document.getElementById('abrand-founder-bio').value.trim() || b.founderBio;
+
+            const logoFile = document.getElementById('abrand-logo-file')?.files?.[0];
+            if (logoFile) b.logoDataUrl = await compressImageDataUrl(logoFile, 300, 0.85);
+
+            const founderFile = document.getElementById('abrand-founder-file')?.files?.[0];
+            if (founderFile) b.founderPhoto = await compressImageDataUrl(founderFile, 600, 0.8);
+
+            saveState();
+            showToast('Branding & Founder updates saved!', 'success');
         }
 
         function handleAdminSaveAbout(e) {
             e.preventDefault();
-            appState.about.mission = document.getElementById('aabout-mission').value.trim();
-            appState.about.vision = document.getElementById('aabout-vision').value.trim();
-            appState.about.values = document.getElementById('aabout-values').value.trim();
-            appState.about.email = document.getElementById('aabout-email').value.trim();
-            appState.about.phone = document.getElementById('aabout-phone').value.trim();
-            appState.about.address = document.getElementById('aabout-address').value.trim();
-            appState.about.socials = {
+            const a = appState.about;
+            a.mission = document.getElementById('aabout-mission').value.trim();
+            a.vision = document.getElementById('aabout-vision').value.trim();
+            a.values = document.getElementById('aabout-values').value.trim();
+            a.email = document.getElementById('aabout-email').value.trim();
+            a.phone = document.getElementById('aabout-phone').value.trim();
+            a.address = document.getElementById('aabout-address').value.trim();
+            a.socials = {
                 instagram: document.getElementById('aabout-ig').value.trim(),
                 youtube: document.getElementById('aabout-yt').value.trim(),
                 facebook: document.getElementById('aabout-fb').value.trim(),
                 linkedin: document.getElementById('aabout-li').value.trim()
             };
             saveState();
-            showToast('About Us & contact details saved!', 'success');
+            showToast('About Us & Contact details updated!', 'success');
         }
 
-        function renderAdminTeam() {
-            document.getElementById('admin-team-list').innerHTML = appState.about.team.map(m => `
-                <div class="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-2">
+        async function handleAdminAddTeamMember(e) {
+            e.preventDefault();
+            const name = document.getElementById('ateam-name').value.trim();
+            const role = document.getElementById('ateam-role').value.trim();
+            const photoFile = document.getElementById('ateam-photo')?.files?.[0];
+            const photo = photoFile ? await compressImageDataUrl(photoFile, 450, 0.8) : '';
+            appState.about.team = appState.about.team || [];
+            appState.about.team.push({ id: 't-' + Date.now(), name, role, photo });
+            e.target.reset();
+            saveState();
+            showToast('Team member added!', 'success');
+        }
+
+        function deleteAdminTeamMember(id) {
+            appState.about.team = (appState.about.team || []).filter(m => m.id !== id);
+            saveState();
+            showToast('Team member removed.', 'info');
+        }
+
+        function toggleAdminNotificationPref() {
+            appState.notifyAdminOnVisit = !!document.getElementById('asec-notify-visit')?.checked;
+            appState.notifyAdminOnRegistration = !!document.getElementById('asec-notify-reg')?.checked;
+            saveState();
+            showToast('Email notification preferences updated.', 'success');
+        }
+
+        function sendTestAdminEmailAlert() {
+            const targetEmail = appState.about?.email || 'info@lighthousecreatives.org';
+            logAdminActivity('Test Alert', `Test email alert sent to ${targetEmail}`);
+            dispatchAdminEmailAlert('Test Alert — LIGHT HOUSE CREATIVES INTERNATIONAL', [
+                'This is a live test alert from your Administrator Control Center.',
+                `Target Email: ${targetEmail}`
+            ]);
+            saveState();
+            showToast(`Test email dispatched to ${targetEmail}!`, 'success');
+        }
+
+        function renderAdminActivityLogs() {
+            const box = document.getElementById('admin-activity-logs-list');
+            if (!box) return;
+            const logs = appState.activityLogs || [];
+            if (!logs.length) {
+                box.innerHTML = `<div class="py-4 text-slate-400 text-center">No visitor or registration alerts logged yet.</div>`;
+                return;
+            }
+            box.innerHTML = logs.map(l => `
+                <div class="py-2 flex items-center justify-between gap-2">
                     <div>
-                        <div class="font-bold text-xs text-slate-900">${escapeHtml(m.name)}</div>
-                        <div class="text-[11px] text-slate-500">${escapeHtml(m.role)}</div>
+                        <span class="font-bold text-indigo-700">[${escapeHtml(l.type)}]</span>
+                        <span class="text-slate-700">${escapeHtml(l.message)}</span>
                     </div>
-                    <button onclick="deleteAdminTeamMember('${m.id}')" class="text-xs font-bold text-rose-600">Remove</button>
+                    <span class="text-[10px] text-slate-400 shrink-0">${escapeHtml(l.timestamp)}</span>
                 </div>
             `).join('');
         }
 
-        function handleAdminAddTeamMember(e) {
-            e.preventDefault();
-            const name = document.getElementById('ateam-name').value.trim();
-            const role = document.getElementById('ateam-role').value.trim();
-            const file = document.getElementById('ateam-photo').files[0];
-
-            const finishAdd = (photoUrl) => {
-                appState.about.team.push({
-                    id: 'team-' + Date.now(),
-                    name,
-                    role,
-                    photo: photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'
-                });
-                e.target.reset();
-                saveState();
-                showToast('Team member added!', 'success');
-            };
-
-            if (file) {
-                compressImageDataUrl(file, 450, 0.75).then(finishAdd);
-            } else {
-                finishAdd('');
-            }
-        }
-
-        function deleteAdminTeamMember(id) {
-            appState.about.team = appState.about.team.filter(m => m.id !== id);
+        function clearActivityLogs() {
+            appState.activityLogs = [];
             saveState();
+            showToast('Activity log cleared.', 'info');
         }
 
         function handleAdminChangePassword(e) {
             e.preventDefault();
-            const p1 = document.getElementById('asec-new-pass').value;
-            const p2 = document.getElementById('asec-confirm-pass').value;
-            if (p1 !== p2) {
+            const np = document.getElementById('asec-new-pass').value.trim();
+            const cp = document.getElementById('asec-confirm-pass').value.trim();
+            if (np !== cp) {
                 showToast('Passcodes do not match.', 'error');
                 return;
             }
-            appState.adminPasscode = p1;
+            appState.adminPasscode = np;
             e.target.reset();
             saveState();
             showToast('Administrator passcode updated!', 'success');
@@ -3333,100 +3077,68 @@ ${appState.branding.orgName}`;
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `LHCI_Portal_Backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `LHCI_Portal_Backup_${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
+            showToast('Full site backup downloaded!', 'success');
         }
 
         function importPortalBackup(e) {
-            const file = e.target.files[0];
+            const file = e.target.files?.[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = () => {
+            reader.onload = (ev) => {
                 try {
-                    const imported = JSON.parse(reader.result);
-                    if (imported && imported.branding && imported.programs) {
-                        appState = imported;
-                        saveState();
-                        showToast('Full site backup restored!', 'success');
-                    } else {
-                        showToast('Invalid backup file.', 'error');
-                    }
+                    const imported = JSON.parse(ev.target.result);
+                    appState = mergePortalStates(appState, imported);
+                    saveState();
+                    showToast('Backup restored successfully!', 'success');
                 } catch (err) {
-                    showToast('Could not read backup JSON.', 'error');
+                    showToast('Invalid backup JSON file.', 'error');
                 }
             };
             reader.readAsText(file);
         }
 
-        // =========================================================
-        // HELPERS (VIDEO EMBED, FALLBACK CERTIFICATES, ESCAPE)
-        // =========================================================
-        function buildVideoEmbedHtml(v) {
-            const url = v.url || '';
-            if (url.startsWith('data:video') || url.endsWith('.mp4')) {
-                return `<video controls class="w-full h-full object-cover"><source src="${url}"></video>`;
-            }
-            const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            if (ytMatch) {
-                return `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${ytMatch[1]}" title="${escapeHtml(v.title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-            }
-            return `<div class="w-full h-full flex flex-col items-center justify-center p-4 text-center text-white space-y-2">
-                <i data-lucide="play-circle" class="w-10 h-10 text-amber-400"></i>
-                <a href="${url}" target="_blank" rel="noopener" class="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold">Watch Video Session</a>
-            </div>`;
-        }
-
-        function createFallbackTextDataUrl(title, body) {
-            const content = `LIGHT HOUSE CREATIVES INTERNATIONAL\n=====================================\n${title}\n\n${body}`;
-            return 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
-        }
-
-        function createFallbackCertificateDataUrl(reg, progTitle) {
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="780" viewBox="0 0 1100 780">
-                <rect width="1100" height="780" fill="#ffffff"/>
-                <rect x="24" y="24" width="1052" height="732" fill="none" stroke="#4f46e5" stroke-width="6"/>
-                <text x="550" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="bold" fill="#0f172a">LIGHT HOUSE CREATIVES INTERNATIONAL</text>
-                <text x="550" y="210" text-anchor="middle" font-family="Georgia, serif" font-size="46" font-weight="bold" fill="#1e1b4b">CERTIFICATE OF COMPLETION</text>
-                <text x="550" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569">This is to certify that</text>
-                <text x="550" y="365" text-anchor="middle" font-family="Georgia, serif" font-size="42" font-weight="bold" fill="#e11d48">${escapeHtml(reg.name)}</text>
-                <text x="550" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569">has successfully completed the training cohort</text>
-                <text x="550" y="495" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="bold" fill="#0f172a">${escapeHtml(progTitle)}</text>
-                <text x="260" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#0f172a">${escapeHtml(appState.branding.founderName)}</text>
-                <text x="260" y="665" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Founder &amp; Global President</text>
-                <text x="840" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#0f172a">${escapeHtml(reg.approvedDate || '2026')}</text>
-                <text x="840" y="665" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Date Issued</text>
-            </svg>`;
-            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-        }
-
-        function escapeHtml(str) {
-            return String(str || '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
-        }
-
         function refreshAllViews() {
             renderSiteContent();
-            if (isAdminLoggedIn && !document.getElementById('admin-dashboard-view').classList.contains('hidden')) {
-                renderAdminDashboard();
-            }
+            renderPrograms();
+            renderHomeTestimonies();
+            populateProgramDropdowns();
+            updateRegistrationPaymentInfo();
+            if (activeStudentEmail) renderStudentPortalState();
+            if (isAdminLoggedIn) renderAdminDashboard();
+            if (window.lucide) lucide.createIcons();
         }
 
-        // Initialize Portal & Restore Any Active Student or Admin Session
+        function trackVisitorSession() {
+            if (sessionStorage.getItem(VISITOR_PING_SESSION_KEY)) return;
+            sessionStorage.setItem(VISITOR_PING_SESSION_KEY, '1');
+            logAdminActivity('Visitor', `New portal visitor opened site (${navigator.platform || 'Web'})`);
+            if (appState.notifyAdminOnVisit !== false) {
+                dispatchAdminEmailAlert('New Website Visitor — LIGHT HOUSE CREATIVES INTERNATIONAL', [
+                    'A visitor opened the LIGHT HOUSE CREATIVES INTERNATIONAL Training Portal.',
+                    `Page URL: ${window.location.href}`,
+                    `Device Info: ${navigator.userAgent}`
+                ]);
+            }
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {}
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
-            renderSiteContent();
-            if (activeStudentEmail) {
-                navigateTo('student-portal');
+            const urlParams = new URLSearchParams(window.location.search);
+            const dbParam = urlParams.get('db');
+            if (dbParam && dbParam.startsWith('https://')) {
+                localStorage.setItem(CUSTOM_CLOUD_DB_KEY, dbParam.replace(/\/+$/, ''));
             }
-            if (isAdminLoggedIn) {
-                updateHeaderAdminButton();
-            }
-            notifyAdminOnWebsiteVisit();
+
+            refreshAllViews();
+            updateAdminAuthViews();
+            trackVisitorSession();
             pullStateFromCloud(true);
-            setInterval(() => pullStateFromCloud(false), 12000);
+            setInterval(() => pullStateFromCloud(false), 15000);
         });
     </script>
 </body>
