@@ -156,14 +156,39 @@
 </head>
 <body class="antialiased selection:bg-amber-500 selection:text-white flex flex-col min-h-screen">
 
-    <!-- Top Rainbow Spectrum Strip -->
-    <div class="rainbow-bar h-1.5 w-full sticky top-0 z-50"></div>
+    <!-- Top Sticky Bar: Rainbow Strip + Tiny Countdown Ticker Above Header -->
+    <div class="sticky top-0 z-50">
+        <div class="rainbow-bar h-1.5 w-full"></div>
+        <div class="bg-brand-dark text-white border-b border-white/10 px-3 py-1.5 text-[11px] sm:text-xs">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-1">
+                <div class="flex items-center gap-1.5 font-semibold text-amber-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Training Starts In:</span>
+                </div>
+                <div class="flex items-center gap-1.5 font-mono font-extrabold tracking-tight">
+                    <span class="px-1.5 py-0.5 rounded bg-white/10 text-white"><span id="top-cd-days">00</span>d</span>
+                    <span class="text-slate-500">:</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/10 text-amber-400"><span id="top-cd-hours">00</span>h</span>
+                    <span class="text-slate-500">:</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/10 text-emerald-400"><span id="top-cd-mins">00</span>m</span>
+                    <span class="text-slate-500">:</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/10 text-sky-400"><span id="top-cd-secs">00</span>s</span>
+                </div>
+                <div class="hidden md:flex items-center gap-3 text-[11px] text-slate-300">
+                    <span id="top-cd-schedule-text">Loading schedule...</span>
+                    <button onclick="navigateTo('register')" class="px-2.5 py-0.5 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] transition-colors">
+                        Enroll Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Global Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
     <!-- Navigation Header -->
-    <header class="sticky top-1.5 z-40 glass-panel border-b border-slate-200/80 shadow-sm">
+    <header class="sticky top-[34px] sm:top-[36px] z-40 glass-panel border-b border-slate-200/80 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <!-- Logo & Brand -->
@@ -253,7 +278,7 @@
                                 Illuminating Global Talent Through Creative Excellence
                             </h1>
                             <p id="hero-subtitle" class="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
-                                Welcome to LIGHT HOUSE CREATIVES INTERNATIONAL. Enroll in our flagship global cohort training, join our active WhatsApp learning community, access live Zoom sessions, and claim your verified digital certificate upon completion.
+                                Welcome to LIGHT HOUSE CREATIVES INTERNATIONAL. Enroll in our flagship global cohort training, join our active WhatsApp learning community, access live Telegram training sessions, and claim your verified digital certificate upon completion.
                             </p>
                             <div class="flex flex-wrap items-center gap-4 pt-2">
                                 <button onclick="navigateTo('register')" class="px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm sm:text-base transition-all shadow-lg shadow-amber-500/25 flex items-center gap-2">
@@ -273,7 +298,7 @@
                                 </div>
                                 <div>
                                     <p id="hero-stat2-val" class="font-display text-2xl sm:text-3xl font-extrabold text-amber-400">Live</p>
-                                    <p id="hero-stat2-lbl" class="text-xs text-slate-400 mt-0.5">Zoom & WhatsApp Hub</p>
+                                    <p id="hero-stat2-lbl" class="text-xs text-slate-400 mt-0.5">Telegram & WhatsApp Hub</p>
                                 </div>
                                 <div>
                                     <p id="hero-stat3-val" class="font-display text-2xl sm:text-3xl font-extrabold text-emerald-400">100%</p>
@@ -286,42 +311,71 @@
                         <div class="lg:col-span-5">
                             <div class="bg-slate-900/90 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md relative overflow-hidden">
                                 <div class="rainbow-bar h-1.5 w-full absolute top-0 left-0"></div>
-                                <div class="flex items-center justify-between mb-6 pt-1">
+                                <div class="flex items-center justify-between mb-4 pt-1">
                                     <span id="hero-card-tag" class="text-xs font-bold uppercase tracking-wider text-amber-400">Official Cohort Enrollment</span>
                                     <span id="hero-card-status" class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold flex items-center gap-1">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Open Now
                                     </span>
                                 </div>
-                                <div class="space-y-4">
-                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3.5">
-                                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                                            <i data-lucide="message-circle" class="w-5 h-5"></i>
+
+                                <!-- Live Training Commencement Countdown -->
+                                <div class="mb-5 p-4 rounded-2xl bg-slate-950/90 border border-amber-500/30 text-center">
+                                    <span class="text-[11px] font-bold uppercase tracking-widest text-amber-400 block">Training Commencement Countdown</span>
+                                    <p id="hero-training-datetime-label" class="text-xs text-slate-300 mt-0.5 font-medium">Loading schedule...</p>
+                                    <div id="live-countdown-grid" class="grid grid-cols-4 gap-2 mt-3">
+                                        <div class="bg-white/5 border border-white/10 rounded-xl py-2 px-1">
+                                            <span id="cd-days" class="font-display text-xl sm:text-2xl font-extrabold text-white block leading-none">00</span>
+                                            <span class="text-[10px] uppercase tracking-wider text-slate-400 mt-1 block">Days</span>
+                                        </div>
+                                        <div class="bg-white/5 border border-white/10 rounded-xl py-2 px-1">
+                                            <span id="cd-hours" class="font-display text-xl sm:text-2xl font-extrabold text-amber-400 block leading-none">00</span>
+                                            <span class="text-[10px] uppercase tracking-wider text-slate-400 mt-1 block">Hours</span>
+                                        </div>
+                                        <div class="bg-white/5 border border-white/10 rounded-xl py-2 px-1">
+                                            <span id="cd-mins" class="font-display text-xl sm:text-2xl font-extrabold text-emerald-400 block leading-none">00</span>
+                                            <span class="text-[10px] uppercase tracking-wider text-slate-400 mt-1 block">Mins</span>
+                                        </div>
+                                        <div class="bg-white/5 border border-white/10 rounded-xl py-2 px-1">
+                                            <span id="cd-secs" class="font-display text-xl sm:text-2xl font-extrabold text-sky-400 block leading-none">00</span>
+                                            <span class="text-[10px] uppercase tracking-wider text-slate-400 mt-1 block">Secs</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-[11px] text-rose-300 font-semibold mt-2.5 flex items-center justify-center gap-1.5">
+                                        <i data-lucide="alarm-clock" class="w-3.5 h-3.5 text-rose-400"></i>
+                                        <span>Payment Deadline: <strong id="hero-payment-deadline-label" class="text-white">TBA</strong></span>
+                                    </p>
+                                </div>
+
+                                <div class="space-y-3.5">
+                                    <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3">
+                                        <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                                            <i data-lucide="message-circle" class="w-4 h-4"></i>
                                         </div>
                                         <div>
                                             <h3 id="hero-feat1-title" class="font-semibold text-white text-sm">Instant WhatsApp Cohort Access</h3>
-                                            <p id="hero-feat1-desc" class="text-xs text-slate-400 mt-1">Get the official WhatsApp group invite link immediately after submitting your registration.</p>
+                                            <p id="hero-feat1-desc" class="text-xs text-slate-400 mt-0.5">Get the official WhatsApp group invite link immediately after submitting your registration.</p>
                                         </div>
                                     </div>
-                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3.5">
-                                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                                            <i data-lucide="video" class="w-5 h-5"></i>
+                                    <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3">
+                                        <div class="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                                            <i data-lucide="send" class="w-4 h-4"></i>
                                         </div>
                                         <div>
-                                            <h3 id="hero-feat2-title" class="font-semibold text-white text-sm">Live Zoom Masterclasses</h3>
-                                            <p id="hero-feat2-desc" class="text-xs text-slate-400 mt-1">Once Admin approves your payment, Zoom link, passcode, date & time unlock automatically.</p>
+                                            <h3 id="hero-feat2-title" class="font-semibold text-white text-sm">Live Telegram Training Room</h3>
+                                            <p id="hero-feat2-desc" class="text-xs text-slate-400 mt-0.5">Once Admin approves your payment, your Telegram class invite link, access code, date & time unlock automatically.</p>
                                         </div>
                                     </div>
-                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3.5">
-                                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                                            <i data-lucide="award" class="w-5 h-5"></i>
+                                    <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3">
+                                        <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                            <i data-lucide="award" class="w-4 h-4"></i>
                                         </div>
                                         <div>
                                             <h3 id="hero-feat3-title" class="font-semibold text-white text-sm">Official Digital Certification</h3>
-                                            <p id="hero-feat3-desc" class="text-xs text-slate-400 mt-1">Download your personalized completion certificate directly inside your Student Portal.</p>
+                                            <p id="hero-feat3-desc" class="text-xs text-slate-400 mt-0.5">Download your personalized completion certificate directly inside your Student Portal.</p>
                                         </div>
                                     </div>
                                 </div>
-                                <button onclick="navigateTo('register')" id="hero-card-btn" class="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm transition-all shadow-md">
+                                <button onclick="navigateTo('register')" id="hero-card-btn" class="mt-5 w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm transition-all shadow-md">
                                     Enroll in Flagship Cohort
                                 </button>
                             </div>
@@ -331,18 +385,13 @@
             </section>
 
             <!-- Flagship Training Program Section -->
-            <section id="programs" class="py-16 sm:py-24 bg-white">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="text-center max-w-3xl mx-auto mb-12">
-                        <span id="program-section-eyebrow" class="text-xs font-bold uppercase tracking-widest rainbow-text">Official Training Track</span>
-                        <h2 id="program-section-heading" class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">Flagship Training Program</h2>
-                        <p id="program-section-sub" class="text-slate-600 mt-3 text-sm sm:text-base">
-                            Our comprehensive cohort curriculum equips creatives, leaders, and entrepreneurs with practical skills, live mentorship, and global certification.
-                        </p>
+            <section id="programs" class="py-16 sm:py-24 bg-white border-t border-slate-200/70">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center max-w-2xl mx-auto mb-10">
+                        <span class="text-xs font-bold uppercase tracking-widest rainbow-text">Official Training Schedule & Tuition Account</span>
+                        <h2 id="program-section-heading" class="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 mt-1">Flagship Training Program</h2>
                     </div>
-
-                    <!-- Dynamic Flagship Program Card Container -->
-                    <div id="programs-grid" class="max-w-3xl mx-auto">
+                    <div id="programs-grid">
                         <!-- Rendered via JS -->
                     </div>
                 </div>
@@ -353,30 +402,26 @@
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden rainbow-border-card">
                         <div class="grid lg:grid-cols-12 items-center">
-                            <div class="lg:col-span-5 bg-slate-900 h-full min-h-[220px] sm:min-h-[260px] lg:min-h-[320px] flex items-center justify-center relative overflow-hidden p-5 sm:p-7 lg:p-8">
-                                <img id="founder-photo-img" src="https://placehold.co/600x650/1E293B/F59E0B?text=Founder+Portrait" onerror="this.src='https://placehold.co/600x650/1E293B/F59E0B?text=Founder+Portrait'" alt="Founder of Light House Creatives International" class="w-full max-w-[200px] sm:max-w-[240px] lg:max-w-xs rounded-2xl object-cover shadow-2xl border-2 border-amber-500/30 aspect-[4/5]">
+                            <div class="lg:col-span-5 bg-gradient-to-br from-slate-800 via-slate-900 to-indigo-950 h-full min-h-[220px] sm:min-h-[260px] lg:min-h-[320px] flex items-center justify-center relative overflow-hidden p-5 sm:p-7 lg:p-8">
+                                <img id="founder-photo-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231E293B'/%3E%3Cstop offset='55%25' stop-color='%23334155'/%3E%3Cstop offset='100%25' stop-color='%230F172A'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='50%25' cy='32%25' r='48%25'%3E%3Cstop offset='0%25' stop-color='%23F8FAFC' stop-opacity='0.22'/%3E%3Cstop offset='100%25' stop-color='%230F172A' stop-opacity='0'/%3E%3C/radialGradient%3E%3ClinearGradient id='suit' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%231E293B'/%3E%3Cstop offset='100%25' stop-color='%23090D16'/%3E%3C/linearGradient%3E%3ClinearGradient id='skin' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%238D5524'/%3E%3Cstop offset='100%25' stop-color='%236B3E18'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='500' fill='url(%23bg)'/%3E%3Crect width='400' height='500' fill='url(%23glow)'/%3E%3Ccircle cx='200' cy='165' r='115' fill='none' stroke='%23F59E0B' stroke-opacity='0.18' stroke-width='2'/%3E%3Crect x='174' y='222' width='52' height='55' rx='16' fill='url(%23skin)'/%3E%3Cellipse cx='200' cy='168' rx='54' ry='66' fill='url(%23skin)'/%3E%3Cpath d='M146 155 C146 105, 254 105, 254 155 C252 126, 232 114, 200 114 C168 114, 148 126, 146 155 Z' fill='%230F172A'/%3E%3Cpath d='M72 500 C76 365, 112 305, 168 282 L200 355 L232 282 C288 305, 324 365, 328 500 Z' fill='url(%23suit)'/%3E%3Cpolygon points='168,282 200,355 232,282 214,274 200,305 186,274' fill='%23FFFFFF'/%3E%3Cpolygon points='193,296 207,296 204,352 200,362 196,352' fill='%23D97706'/%3E%3Cpolygon points='168,282 148,332 178,354 200,355' fill='%230F172A'/%3E%3Cpolygon points='232,282 252,332 222,354 200,355' fill='%230F172A'/%3E%3Crect x='244' y='374' width='34' height='8' rx='2' fill='%23F59E0B'/%3E%3C/svg%3E" onerror="this.src='https://placehold.co/600x650/1E293B/F59E0B?text=Founder+Portrait'" alt="Founder of Light House Creatives International" class="w-full max-w-[200px] sm:max-w-[240px] lg:max-w-xs rounded-2xl object-cover shadow-2xl border-2 border-amber-500/30 aspect-[4/5]">
                             </div>
                             <div class="lg:col-span-7 p-6 sm:p-10 lg:p-12 space-y-5">
-                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold uppercase tracking-wider">
-                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                    <span id="founder-badge-display">Visionary Leadership</span>
-                                </div>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-xs font-bold uppercase tracking-wider">
+                                    Direct Mentorship & Vision
+                                </span>
                                 <div>
                                     <h2 id="founder-name-display" class="font-display text-2xl sm:text-4xl font-extrabold text-slate-900">Founder & Lead Visionary</h2>
-                                    <p id="founder-role-display" class="text-amber-600 font-semibold text-sm sm:text-base mt-1">President, LIGHT HOUSE CREATIVES INTERNATIONAL</p>
+                                    <p id="founder-role-display" class="text-sm font-bold text-amber-600 mt-1">President, LIGHT HOUSE CREATIVES INTERNATIONAL</p>
                                 </div>
-                                <p id="founder-bio-display" class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                                <p id="founder-bio-display" class="text-slate-600 text-sm sm:text-base leading-relaxed">
                                     Dedicated to raising a new generation of purpose-driven creatives, communicators, and innovators across nations. Through LIGHT HOUSE CREATIVES INTERNATIONAL, thousands of emerging leaders are mentored in excellence, ethical leadership, and practical creative mastery.
                                 </p>
-                                <blockquote id="founder-quote-display" class="p-4 rounded-2xl bg-slate-50 border-l-4 border-amber-500 italic text-slate-700 text-sm sm:text-base font-medium">
+                                <blockquote id="founder-quote-display" class="p-4 rounded-2xl bg-slate-50 border-l-4 border-amber-500 text-slate-800 font-semibold italic text-sm sm:text-base">
                                     "Every creative carries a light meant to illuminate nations. When skill meets purpose, transformation becomes unstoppable."
                                 </blockquote>
-                                <div class="pt-2 flex flex-wrap gap-3">
-                                    <button onclick="navigateTo('register')" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-all">
-                                        Join the Next Cohort
-                                    </button>
-                                    <button onclick="navigateTo('about')" class="px-5 py-2.5 rounded-xl border border-slate-200 hover:border-amber-400 text-slate-700 text-sm font-semibold transition-all">
-                                        Read Our Full Story
+                                <div class="pt-2">
+                                    <button onclick="navigateTo('register')" class="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all">
+                                        Train With Us
                                     </button>
                                 </div>
                             </div>
@@ -387,23 +432,20 @@
 
             <!-- Student Testimonies & Impact Stories Slider -->
             <section id="testimonies" class="py-16 sm:py-24 bg-white border-t border-slate-200/70">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex flex-wrap items-end justify-between gap-4 mb-10">
                         <div>
-                            <span id="testimony-section-eyebrow" class="text-xs font-bold uppercase tracking-widest rainbow-text">Alumni & Cohort Voices</span>
-                            <h2 id="testimony-section-heading" class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">Student Testimonies & Impact Stories</h2>
-                            <p id="testimony-section-sub" class="text-slate-600 mt-2 text-sm sm:text-base max-w-2xl">
-                                Hear directly from creatives and leaders trained at LIGHT HOUSE CREATIVES INTERNATIONAL. Enrolled students can post their testimony inside the Student Portal.
-                            </p>
+                            <span class="text-xs font-bold uppercase tracking-widest rainbow-text">Alumni & Cohort Voices</span>
+                            <h2 class="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 mt-1">Student Testimonies & Impact Stories</h2>
                         </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <button onclick="slideTestimony(-1)" class="p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 bg-white text-slate-700 transition-all" aria-label="Previous Testimony">
+                        <div class="flex items-center gap-2">
+                            <button onclick="slideTestimony(-1)" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700" aria-label="Previous Testimony">
                                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
                             </button>
-                            <button onclick="slideTestimony(1)" class="p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 bg-white text-slate-700 transition-all" aria-label="Next Testimony">
+                            <button onclick="slideTestimony(1)" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700" aria-label="Next Testimony">
                                 <i data-lucide="chevron-right" class="w-5 h-5"></i>
                             </button>
-                            <button onclick="navigateTo('student-portal')" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm transition-all">
+                            <button onclick="navigateTo('student-portal')" class="ml-2 px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 text-xs font-bold">
                                 Share Your Testimony
                             </button>
                         </div>
@@ -443,7 +485,7 @@
                             </span>
                             <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-white">Welcome to the Cohort, <span id="reg-success-name" class="text-amber-400">Student</span>!</h2>
                             <p class="text-emerald-100/90 text-sm leading-relaxed max-w-xl">
-                                Your registration details and payment receipt have been synced to the Administrator Portal. Join our official cohort WhatsApp group right now for onboarding updates, and open your Student Portal anytime to check your Zoom approval status.
+                                Your registration details and payment receipt have been synced to the Administrator Portal. Join our official cohort WhatsApp group right now for onboarding updates, and open your Student Portal anytime to check your Telegram training room approval status.
                             </p>
                         </div>
                         <div class="flex flex-col sm:flex-row md:flex-col gap-3 w-full md:w-auto shrink-0">
@@ -462,20 +504,58 @@
                 <!-- Registration Form Card -->
                 <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 rainbow-border-card">
                     <form id="student-registration-form" onsubmit="handleStudentRegistration(event)" class="space-y-6">
-                        <!-- Program Selection & Fee Summary -->
+                        <!-- Program Selection, Schedule & Official Bank Account Payment Details -->
                         <div class="grid md:grid-cols-12 gap-6 items-start bg-slate-50 p-5 rounded-2xl border border-slate-200/80">
-                            <div class="md:col-span-7 space-y-2">
-                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Training Program *</label>
+                            <div class="md:col-span-6 space-y-2.5">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Active Training Cohort *</label>
                                 <select id="reg-program" onchange="updateRegistrationPaymentInfo()" required class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                                     <!-- Populated via JS -->
                                 </select>
-                                <p id="reg-program-schedule" class="text-xs text-slate-500 font-medium"></p>
+                                <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-1.5 text-xs">
+                                    <p class="text-slate-700 flex items-center gap-1.5">
+                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-600 shrink-0"></i>
+                                        <span><strong>Training Date & Time:</strong> <span id="reg-program-datetime">TBA</span></span>
+                                    </p>
+                                    <p class="text-emerald-700 flex items-center gap-1.5">
+                                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                                        <span><strong>Early Registration:</strong> <span id="reg-early-interval">TBA</span></span>
+                                    </p>
+                                    <p class="text-rose-700 flex items-center gap-1.5">
+                                        <i data-lucide="alarm-clock" class="w-3.5 h-3.5 text-rose-600 shrink-0"></i>
+                                        <span><strong>Late Registration:</strong> <span id="reg-late-interval">TBA</span></span>
+                                    </p>
+                                    <p id="reg-program-schedule" class="text-slate-500 font-medium pt-0.5"></p>
+                                </div>
                             </div>
-                            <div class="md:col-span-5 bg-white p-4 rounded-xl border border-amber-200 shadow-xs">
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-700 block">Program Tuition Fee</span>
-                                <p id="reg-program-fee" class="font-display text-2xl font-extrabold text-slate-900 mt-0.5">$0</p>
-                                <p id="reg-payment-instructions" class="text-xs text-slate-600 mt-2 leading-relaxed border-t border-slate-100 pt-2">
-                                    Transfer fee to official account and upload payment receipt below.
+                            <div class="md:col-span-6 bg-white p-4 sm:p-5 rounded-xl border-2 border-amber-300 shadow-xs space-y-2.5">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-2 gap-2">
+                                    <div>
+                                        <span class="text-[11px] font-bold uppercase tracking-wider text-amber-700 block">Official Payment Account</span>
+                                        <span id="reg-pricing-tier-badge" class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700">Early Registration Active</span>
+                                    </div>
+                                    <div id="reg-program-fee-box" class="text-right">
+                                        <span class="font-display text-xl font-extrabold text-slate-900">₦1,500</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5 text-xs">
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-slate-500">Bank Name:</span>
+                                        <strong id="reg-bank-name" class="text-slate-900 text-right">Zenith Bank / First Bank</strong>
+                                    </div>
+                                    <div class="flex justify-between gap-2">
+                                        <span class="text-slate-500">Account Name:</span>
+                                        <strong id="reg-account-name" class="text-slate-900 text-right">LIGHT HOUSE CREATIVES INTERNATIONAL</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                                        <span class="text-amber-900 font-semibold">Account Number:</span>
+                                        <div class="flex items-center gap-2">
+                                            <strong id="reg-account-number" class="font-mono text-sm font-extrabold text-slate-950 select-all">1234567890</strong>
+                                            <button type="button" onclick="copyPaymentAccountNumber()" class="px-2 py-0.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-bold">Copy</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p id="reg-payment-instructions" class="text-[11px] text-slate-600 leading-relaxed pt-1">
+                                    Transfer tuition fee to the official account above and upload your payment receipt below.
                                 </p>
                             </div>
                         </div>
@@ -505,7 +585,7 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Create Student Portal Password *</label>
                                 <input type="password" id="reg-password" required minlength="4" placeholder="Create a password to log in later" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                                <p class="text-[11px] text-slate-500 mt-1">Used to sign into your Student Portal, access Zoom links, and download certificates.</p>
+                                <p class="text-[11px] text-slate-500 mt-1">Used to sign into your Student Portal, access your Telegram training link, and download certificates.</p>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Upload Profile Picture (Optional)</label>
@@ -523,7 +603,7 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Upload Payment Receipt Screenshot *</label>
                                 <input type="file" id="reg-receipt-file" accept="image/*,.pdf" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs bg-amber-50/50 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400">
-                                <p class="text-[11px] text-slate-500 mt-1">Admin verifies your receipt to unlock your Zoom class link.</p>
+                                <p class="text-[11px] text-slate-500 mt-1">Admin verifies your receipt to unlock your Telegram training class link.</p>
                             </div>
                         </div>
 
@@ -547,7 +627,7 @@
                             <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Home
                         </button>
                         <h1 class="font-display text-2xl sm:text-4xl font-extrabold text-slate-900">Student Learning & Certification Portal</h1>
-                        <p class="text-slate-600 text-sm sm:text-base mt-1">Access your Zoom class link, join the cohort WhatsApp group, post your testimony, and download your certificate.</p>
+                        <p class="text-slate-600 text-sm sm:text-base mt-1">Access your Telegram live training room, join the cohort WhatsApp group, post your testimony, and download your certificate.</p>
                     </div>
                 </div>
 
@@ -656,21 +736,21 @@
 
                     <!-- Student Dashboard Sub-Tabs -->
                     <div class="flex flex-wrap gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
-                        <button onclick="switchStudentTab('zoom')" id="stab-zoom" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition-all">1. Zoom Class & Payment</button>
+                        <button onclick="switchStudentTab('telegram')" id="stab-telegram" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition-all">1. Telegram Class & Payment</button>
                         <button onclick="switchStudentTab('certificate')" id="stab-certificate" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">2. My Certificate</button>
                         <button onclick="switchStudentTab('testimony')" id="stab-testimony" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">3. Post My Testimony</button>
                         <button onclick="switchStudentTab('profile')" id="stab-profile" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">4. Profile & Password</button>
                     </div>
 
-                    <!-- Student Tab 1: Zoom Live Class & Payment Approval Status -->
-                    <div id="spanel-zoom" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
-                        <div id="student-zoom-locked" class="p-6 rounded-2xl bg-amber-50 border border-amber-200 space-y-3">
+                    <!-- Student Tab 1: Telegram Live Class & Payment Approval Status -->
+                    <div id="spanel-telegram" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+                        <div id="student-telegram-locked" class="p-6 rounded-2xl bg-amber-50 border border-amber-200 space-y-3">
                             <div class="flex items-center gap-3 text-amber-800">
                                 <i data-lucide="clock" class="w-6 h-6 text-amber-600 shrink-0"></i>
                                 <h3 class="font-display font-bold text-lg">Payment Receipt Under Review</h3>
                             </div>
                             <p class="text-sm text-amber-900/80 leading-relaxed">
-                                Your payment receipt (<strong id="student-receipt-ref-label">Ref</strong>) has been received. As soon as the Administrator approves your payment, your <strong>Zoom Meeting Link, Passcode, Class Date, Time, and Instructions</strong> will appear right here and be sent to your email.
+                                Your payment receipt (<strong id="student-receipt-ref-label">Ref</strong>) has been received. As soon as the Administrator approves your payment, your <strong>Telegram Training Room Link, Access Code, Class Date, Time, and Instructions</strong> will appear right here and be sent to your email.
                             </p>
                             <div class="pt-2">
                                 <a id="student-locked-whatsapp-link" href="https://chat.whatsapp.com" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] text-slate-950 font-bold text-xs">
@@ -680,44 +760,44 @@
                             </div>
                         </div>
 
-                        <div id="student-zoom-unlocked" class="hidden space-y-5">
+                        <div id="student-telegram-unlocked" class="hidden space-y-5">
                             <div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between flex-wrap gap-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center">
                                         <i data-lucide="check-circle-2" class="w-6 h-6"></i>
                                     </div>
                                     <div>
-                                        <h3 class="font-display font-bold text-emerald-950">Payment Approved! Live Zoom Access Unlocked</h3>
-                                        <p class="text-xs text-emerald-700">Use the official Zoom credentials below to join your live class sessions.</p>
+                                        <h3 class="font-display font-bold text-emerald-950">Payment Approved! Telegram Training Access Unlocked</h3>
+                                        <p class="text-xs text-emerald-700">Use the official Telegram channel/group details below to join your live training sessions.</p>
                                     </div>
                                 </div>
-                                <a id="student-zoom-join-btn" href="#" target="_blank" rel="noopener noreferrer" class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center gap-2 shadow-md">
-                                    <i data-lucide="video" class="w-4 h-4"></i>
-                                    <span>Launch Zoom Class</span>
+                                <a id="student-telegram-join-btn" href="#" target="_blank" rel="noopener noreferrer" class="px-5 py-3 rounded-xl bg-[#229ED9] hover:bg-[#1c8bc0] text-white font-bold text-sm flex items-center gap-2 shadow-md">
+                                    <i data-lucide="send" class="w-4 h-4"></i>
+                                    <span>Join Telegram Class Room</span>
                                 </a>
                             </div>
 
                             <div class="grid sm:grid-cols-2 gap-4">
                                 <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                                    <span class="text-[11px] font-bold uppercase text-slate-500">Zoom Meeting Link</span>
-                                    <p id="student-zoom-link-text" class="text-sm font-bold text-blue-700 break-all mt-1">https://zoom.us/j/...</p>
+                                    <span class="text-[11px] font-bold uppercase text-slate-500">Telegram Class Invite Link</span>
+                                    <p id="student-telegram-link-text" class="text-sm font-bold text-sky-700 break-all mt-1">https://t.me/...</p>
                                 </div>
                                 <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                                    <span class="text-[11px] font-bold uppercase text-slate-500">Zoom Passcode</span>
-                                    <p id="student-zoom-passcode-text" class="text-base font-extrabold text-slate-900 mt-1">LHCI2026</p>
+                                    <span class="text-[11px] font-bold uppercase text-slate-500">Telegram Access / Verification Code</span>
+                                    <p id="student-telegram-passcode-text" class="text-base font-extrabold text-slate-900 mt-1">LHCI2026</p>
                                 </div>
                                 <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                                     <span class="text-[11px] font-bold uppercase text-slate-500">Class Date(s)</span>
-                                    <p id="student-zoom-date-text" class="text-sm font-bold text-slate-900 mt-1">TBA</p>
+                                    <p id="student-telegram-date-text" class="text-sm font-bold text-slate-900 mt-1">TBA</p>
                                 </div>
                                 <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                                     <span class="text-[11px] font-bold uppercase text-slate-500">Class Time</span>
-                                    <p id="student-zoom-time-text" class="text-sm font-bold text-slate-900 mt-1">TBA</p>
+                                    <p id="student-telegram-time-text" class="text-sm font-bold text-slate-900 mt-1">TBA</p>
                                 </div>
                             </div>
                             <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                                 <span class="text-[11px] font-bold uppercase text-slate-500">Joining Instructions</span>
-                                <p id="student-zoom-instructions-text" class="text-sm text-slate-700 mt-1 leading-relaxed"></p>
+                                <p id="student-telegram-instructions-text" class="text-sm text-slate-700 mt-1 leading-relaxed"></p>
                             </div>
                         </div>
                     </div>
@@ -869,7 +949,7 @@
                     <p id="stat-total-students" class="font-display text-2xl sm:text-3xl font-extrabold text-white mt-1">0</p>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-                    <span class="text-xs text-slate-400">Approved Payments (Zoom Active)</span>
+                    <span class="text-xs text-slate-400">Approved Payments (Telegram Active)</span>
                     <p id="stat-approved-payments" class="font-display text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-1">0</p>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
@@ -884,108 +964,188 @@
 
             <!-- Admin Navigation Tabs -->
             <div class="flex flex-wrap gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-800">
-                <button onclick="switchAdminTab('registrations')" id="atab-registrations" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 text-slate-950">1. Students, Payments & Zoom Approvals</button>
-                <button onclick="switchAdminTab('programs')" id="atab-programs" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">2. Flagship Program, WhatsApp & Zoom</button>
+                <button onclick="switchAdminTab('registrations')" id="atab-registrations" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 text-slate-950">1. Students, Payments & Telegram Approvals</button>
+                <button onclick="switchAdminTab('programs')" id="atab-programs" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">2. Training, Bank Details & Telegram</button>
                 <button onclick="switchAdminTab('branding')" id="atab-branding" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">3. Full Site Editor (Header to Footer)</button>
                 <button onclick="switchAdminTab('testimonies')" id="atab-testimonies" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">4. Student Testimonies</button>
                 <button onclick="switchAdminTab('security')" id="atab-security" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">5. Email Alerts, Cloud & Backup</button>
             </div>
 
-            <!-- ADMIN TAB 1: STUDENTS, PAYMENTS & ZOOM APPROVALS -->
-            <div id="apanel-registrations" class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <!-- ADMIN TAB 1: STUDENTS & PAYMENT APPROVALS -->
+            <div id="apanel-registrations" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 class="font-display text-lg font-bold text-white">Registered Students & Payment Verification</h2>
-                        <p class="text-xs text-slate-400">Approve student receipts to unlock their Zoom link/passcode and send their joining email.</p>
+                        <h2 class="font-display text-lg font-bold text-white">Registered Students, Passwords & Payment Verification</h2>
+                        <p class="text-xs text-slate-400">View student passwords, restrict/restore access, approve receipts to unlock Telegram class links, or upload custom certificates.</p>
                     </div>
-                    <input type="text" id="admin-student-search" oninput="adminVisibleLimit = 50; renderAdminRegistrationsTable();" placeholder="Search student name, email, or phone..." class="px-4 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white w-full sm:w-72 outline-none focus:border-amber-500">
+                    <input type="text" id="admin-student-search" oninput="renderAdminRegistrationsTable()" placeholder="Search name, email, phone..." class="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white w-full sm:w-64">
                 </div>
-
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider">
+                            <tr class="border-b border-slate-800 text-slate-400 uppercase text-[11px]">
                                 <th class="py-3 px-3">Student & Password</th>
-                                <th class="py-3 px-3">Portal Activity & Access</th>
-                                <th class="py-3 px-3">Payment & Receipt</th>
-                                <th class="py-3 px-3">Zoom & Certificate</th>
-                                <th class="py-3 px-3 text-right">Actions</th>
+                                <th class="py-3 px-3">Portal Activity</th>
+                                <th class="py-3 px-3">Payment Receipt</th>
+                                <th class="py-3 px-3">Telegram & Cert</th>
+                                <th class="py-3 px-3 text-right">Admin Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-registrations-tbody" class="divide-y divide-slate-800">
-                            <!-- Rendered via JS -->
-                        </tbody>
+                        <tbody id="admin-registrations-tbody" class="divide-y divide-slate-800/70"></tbody>
                     </table>
                 </div>
                 <div id="admin-load-more-wrap" class="hidden pt-3 text-center">
-                    <button onclick="adminVisibleLimit += 50; renderAdminRegistrationsTable();" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold">
-                        Load More Students
+                    <button onclick="adminVisibleLimit += 50; renderAdminRegistrationsTable();" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-amber-400">
+                        Load More Student Records
                     </button>
                 </div>
             </div>
 
-            <!-- ADMIN TAB 2: FLAGSHIP PROGRAM, WHATSAPP GROUP & ZOOM SETTINGS -->
+            <!-- ADMIN TAB 2: CREATE / EDIT TRAINING, BANK ACCOUNT, WHATSAPP & TELEGRAM -->
             <div id="apanel-programs" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
-                <div>
-                    <h2 class="font-display text-lg font-bold text-white">Flagship Program, WhatsApp Group Link & Zoom Credentials</h2>
-                    <p class="text-xs text-slate-400">Configure your single flagship cohort program, the WhatsApp invite link shown after registration, and the Zoom details unlocked upon payment approval.</p>
-                </div>
-                <form onsubmit="saveFlagshipProgramSettings(event)" class="grid sm:grid-cols-2 gap-4">
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1">Program Title *</label>
+                        <h2 class="font-display text-lg font-bold text-white">Training Cohort, Countdown Schedule, Bank Details & Telegram Setup</h2>
+                        <p class="text-xs text-slate-400">Create a new training cohort or adjust the schedule, countdown date/time, payment deadline, bank account details, WhatsApp link, and Telegram room.</p>
+                    </div>
+                    <button type="button" onclick="prepareNewTrainingForm()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-md">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Create New Training Cohort</span>
+                    </button>
+                </div>
+
+                <!-- Saved Trainings Switcher (If Admin Created Multiple Cohorts) -->
+                <div id="admin-saved-trainings-bar" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 block">Created Training Cohorts (Click to Set Active on Site)</span>
+                    <div id="admin-saved-trainings-list" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <form onsubmit="saveFlagshipProgramSettings(event)" class="grid sm:grid-cols-2 gap-4">
+                    <input type="hidden" id="admin-prog-id">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Training Cohort Title *</label>
                         <input type="text" id="admin-prog-title" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1">Tuition Fee *</label>
-                        <input type="text" id="admin-prog-fee" required placeholder="e.g., $50 / ₦50,000" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Cohort Duration & Schedule Summary *</label>
+                        <input type="text" id="admin-prog-schedule" required placeholder="e.g., 6 Weeks Intensive • Live on Telegram + WhatsApp Mentorship" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
                     </div>
+
+                    <!-- Dynamic Early & Late Registration Pricing & Intervals -->
+                    <div class="sm:col-span-2 p-4 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Early & Late Registration Pricing (Automatic Strikethrough Switch)</h3>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-emerald-400 mb-1">Early Registration Fee *</label>
+                                <input type="text" id="admin-prog-early-fee" required placeholder="₦1,500" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-rose-400 mb-1">Late Registration Fee *</label>
+                                <input type="text" id="admin-prog-late-fee" required placeholder="₦2,000" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-amber-300 mb-1">Early Reg Cutoff Date & Time *</label>
+                                <input type="datetime-local" id="admin-prog-early-cutoff-iso" required class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-amber-500/50 text-sm text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Early Registration Date Interval *</label>
+                                <input type="text" id="admin-prog-early-interval" required placeholder="e.g., Nov 24 – Dec 5, 2026" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Late Registration Date Interval *</label>
+                                <input type="text" id="admin-prog-late-interval" required placeholder="e.g., Dec 6 – Dec 11, 2026" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-rose-400 mb-1">Final Payment Deadline *</label>
+                                <input type="text" id="admin-prog-deadline" required placeholder="e.g., Friday, Dec 11, 2026 • 11:59 PM WAT" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-rose-500/50 text-xs text-white">
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1">Duration & Cohort Schedule *</label>
-                        <input type="text" id="admin-prog-schedule" required placeholder="e.g., 6 Weeks Intensive • Saturdays 4:00 PM WAT" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                        <label class="block text-xs font-bold text-amber-400 mb-1">Training Commencement Date & Time (Live Countdown Target) *</label>
+                        <input type="datetime-local" id="admin-prog-start-iso" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-amber-500/50 text-sm text-white">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-emerald-400 mb-1">Official WhatsApp Group Invite Link *</label>
                         <input type="url" id="admin-prog-whatsapp" required placeholder="https://chat.whatsapp.com/..." class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-emerald-600/50 text-sm text-white">
                     </div>
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-bold text-slate-300 mb-1">Program Description *</label>
-                        <textarea id="admin-prog-desc" rows="2" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white"></textarea>
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-bold text-slate-300 mb-1">Bank / Payment Account Details (Shown on Registration Page) *</label>
-                        <textarea id="admin-prog-payment-info" rows="2" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white"></textarea>
-                    </div>
 
-                    <!-- Zoom Details Unlocked Upon Approval -->
+                    <!-- Official Bank Account Details -->
                     <div class="sm:col-span-2 pt-3 border-t border-slate-800">
-                        <h3 class="text-sm font-bold text-amber-400 mb-3">Zoom Class Credentials (Unlocked When Admin Approves Payment)</h3>
-                        <div class="grid sm:grid-cols-2 gap-4">
+                        <h3 class="text-sm font-bold text-amber-400 mb-3">Official Bank Account Details (Shown to Students on Registration & Home Page)</h3>
+                        <div class="grid sm:grid-cols-3 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-300 mb-1">Zoom Meeting Link *</label>
-                                <input type="url" id="admin-prog-zoom-link" required placeholder="https://zoom.us/j/123456789" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Bank Name *</label>
+                                <input type="text" id="admin-prog-bank-name" required placeholder="e.g., Zenith Bank / GTBank" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-300 mb-1">Zoom Passcode *</label>
-                                <input type="text" id="admin-prog-zoom-passcode" required placeholder="LHCI2026" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Account Name *</label>
+                                <input type="text" id="admin-prog-account-name" required placeholder="LIGHT HOUSE CREATIVES INTERNATIONAL" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-300 mb-1">Zoom Class Date(s) *</label>
-                                <input type="text" id="admin-prog-zoom-date" required placeholder="e.g., Every Saturday, Nov – Dec 2026" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-300 mb-1">Zoom Class Time *</label>
-                                <input type="text" id="admin-prog-zoom-time" required placeholder="e.g., 4:00 PM WAT / 3:00 PM GMT" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-xs font-bold text-slate-300 mb-1">Student Joining Instructions *</label>
-                                <textarea id="admin-prog-zoom-instructions" rows="2" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white"></textarea>
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Account Number *</label>
+                                <input type="text" id="admin-prog-account-number" required placeholder="e.g., 1234567890" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white font-mono">
                             </div>
                         </div>
                     </div>
 
                     <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Training Description *</label>
+                        <textarea id="admin-prog-desc" rows="2" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white"></textarea>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Additional Payment Note / Instructions *</label>
+                        <textarea id="admin-prog-payment-info" rows="2" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white"></textarea>
+                    </div>
+
+                    <!-- Training Promotional Flier Upload -->
+                    <div class="sm:col-span-2 p-4 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Training Promotional Flier (Displayed on Home & Registration Pages)</h3>
+                                <p class="text-[11px] text-slate-400">Upload a flier image for this training cohort. Automatically optimizes for fast loading across all devices.</p>
+                            </div>
+                            <button type="button" onclick="clearAdminTrainingFlier()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-300">
+                                Remove Flier
+                            </button>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <input type="file" id="admin-prog-flier-input" accept="image/*" onchange="handleAdminTrainingFlierUpload(event)" class="w-full sm:flex-1 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950">
+                            <img id="admin-prog-flier-preview" src="" alt="Training Flier Preview" class="hidden w-24 h-28 object-cover rounded-xl border border-amber-400/50 shrink-0">
+                        </div>
+                    </div>
+
+                    <!-- Telegram Details Unlocked Upon Approval -->
+                    <div class="sm:col-span-2 pt-3 border-t border-slate-800">
+                        <h3 class="text-sm font-bold text-sky-400 mb-3">Telegram Training Class Credentials (Unlocked When Admin Approves Payment)</h3>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Telegram Channel / Group Invite Link *</label>
+                                <input type="url" id="admin-prog-telegram-link" required placeholder="https://t.me/+YourPrivateInviteLink" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Telegram Access / Verification Code *</label>
+                                <input type="text" id="admin-prog-telegram-passcode" required placeholder="LHCI2026" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Telegram Class Date(s) *</label>
+                                <input type="text" id="admin-prog-telegram-date" required placeholder="e.g., Saturdays • Dec 12, 2026 – Jan 23, 2027" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Telegram Class Time *</label>
+                                <input type="text" id="admin-prog-telegram-time" required placeholder="e.g., 4:00 PM WAT / 3:00 PM GMT" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-bold text-slate-300 mb-1">Student Joining Instructions *</label>
+                                <textarea id="admin-prog-telegram-instructions" rows="2" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-2 flex flex-wrap gap-3">
                         <button type="submit" class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm">
-                            Save Program, WhatsApp & Zoom Settings
+                            Save & Publish Training Cohort
                         </button>
                     </div>
                 </form>
@@ -1209,7 +1369,7 @@
                     <i data-lucide="shield-check" class="w-6 h-6"></i>
                 </div>
                 <h3 class="font-display text-xl font-extrabold text-slate-900">Administrator Sign In</h3>
-                <p class="text-xs text-slate-500 mt-1">Enter your Admin passcode to manage students, payment approvals, and Zoom access.</p>
+                <p class="text-xs text-slate-500 mt-1">Enter your Admin passcode to manage students, payment approvals, and Telegram access.</p>
             </div>
             <form onsubmit="handleAdminLogin(event)" class="space-y-4">
                 <input type="password" id="admin-password-input" required placeholder="Enter Admin Password" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
@@ -1246,7 +1406,7 @@
                     <p id="footer-brand-desc" class="text-slate-400 leading-relaxed max-w-md">
                         A global creative and leadership training academy equipping artists, communicators, media innovators, and purpose-driven leaders across nations with practical mastery and verified certification.
                     </p>
-                    <p id="footer-brand-highlight" class="text-amber-400/90 font-semibold">Global Cohort Capacity: 5,000+ Students • Live Zoom & WhatsApp Mentorship</p>
+                    <p id="footer-brand-highlight" class="text-amber-400/90 font-semibold">Global Cohort Capacity: 5,000+ Students • Live Telegram & WhatsApp Mentorship</p>
                 </div>
 
                 <!-- Quick Portal Links -->
@@ -1264,7 +1424,7 @@
                 <!-- Contact & Cohort Support -->
                 <div class="lg:col-span-4 space-y-2.5">
                     <h4 class="font-display font-bold text-white uppercase tracking-wider text-[11px]">Admissions & Cohort Support</h4>
-                    <p class="text-slate-400">Have questions about tuition verification, Zoom access, or certificates? Reach our admissions desk:</p>
+                    <p class="text-slate-400">Have questions about tuition verification, Telegram class access, or certificates? Reach our admissions desk:</p>
                     <p class="text-white font-semibold flex items-center gap-2">
                         <i data-lucide="mail" class="w-4 h-4 text-amber-400 shrink-0"></i>
                         <span id="footer-contact-email">info@lighthousecreatives.org</span>
@@ -1301,13 +1461,15 @@
         const THEME_MODE_KEY = 'lhci_theme_mode_v1';
         const MAX_SUPPORTED_USERS = 5000;
         const DEFAULT_FAVICON_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23EF4444'/%3E%3Cstop offset='35%25' stop-color='%23F59E0B'/%3E%3Cstop offset='70%25' stop-color='%2322C55E'/%3E%3Cstop offset='100%25' stop-color='%233B82F6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230B0F19'/%3E%3Crect x='3' y='3' width='58' height='58' rx='14' fill='none' stroke='url(%23g)' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23F59E0B'/%3E%3Cg stroke='%23FBBF24' stroke-width='3.5' stroke-linecap='round'%3E%3Cline x1='32' y1='10' x2='32' y2='16'/%3E%3Cline x1='32' y1='48' x2='32' y2='54'/%3E%3Cline x1='10' y1='32' x2='16' y2='32'/%3E%3Cline x1='48' y1='32' x2='54' y2='32'/%3E%3Cline x1='16.5' y1='16.5' x2='20.8' y2='20.8'/%3E%3Cline x1='43.2' y1='43.2' x2='47.5' y2='47.5'/%3E%3Cline x1='47.5' y1='16.5' x2='43.2' y2='20.8'/%3E%3Cline x1='20.8' y1='43.2' x2='16.5' y2='47.5'/%3E%3C/g%3E%3C/svg%3E";
+        const DEFAULT_FOUNDER_PORTRAIT_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231E293B'/%3E%3Cstop offset='55%25' stop-color='%23334155'/%3E%3Cstop offset='100%25' stop-color='%230F172A'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='50%25' cy='32%25' r='48%25'%3E%3Cstop offset='0%25' stop-color='%23F8FAFC' stop-opacity='0.22'/%3E%3Cstop offset='100%25' stop-color='%230F172A' stop-opacity='0'/%3E%3C/radialGradient%3E%3ClinearGradient id='suit' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%231E293B'/%3E%3Cstop offset='100%25' stop-color='%23090D16'/%3E%3C/linearGradient%3E%3ClinearGradient id='skin' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%238D5524'/%3E%3Cstop offset='100%25' stop-color='%236B3E18'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='500' fill='url(%23bg)'/%3E%3Crect width='400' height='500' fill='url(%23glow)'/%3E%3Ccircle cx='200' cy='165' r='115' fill='none' stroke='%23F59E0B' stroke-opacity='0.18' stroke-width='2'/%3E%3Crect x='174' y='222' width='52' height='55' rx='16' fill='url(%23skin)'/%3E%3Cellipse cx='200' cy='168' rx='54' ry='66' fill='url(%23skin)'/%3E%3Cpath d='M146 155 C146 105, 254 105, 254 155 C252 126, 232 114, 200 114 C168 114, 148 126, 146 155 Z' fill='%230F172A'/%3E%3Cpath d='M72 500 C76 365, 112 305, 168 282 L200 355 L232 282 C288 305, 324 365, 328 500 Z' fill='url(%23suit)'/%3E%3Cpolygon points='168,282 200,355 232,282 214,274 200,305 186,274' fill='%23FFFFFF'/%3E%3Cpolygon points='193,296 207,296 204,352 200,362 196,352' fill='%23D97706'/%3E%3Cpolygon points='168,282 148,332 178,354 200,355' fill='%230F172A'/%3E%3Cpolygon points='232,282 252,332 222,354 200,355' fill='%230F172A'/%3E%3Crect x='244' y='374' width='34' height='8' rx='2' fill='%23F59E0B'/%3E%3C/svg%3E";
+
         let isAdminLoggedIn = localStorage.getItem(ADMIN_SESSION_KEY) === 'true';
         let activeStudentEmail = localStorage.getItem(STUDENT_SESSION_KEY) || '';
         let currentTestimonySlide = 0;
         let adminVisibleLimit = 50;
         let lastLocalSaveTs = 0;
+        let countdownIntervalId = null;
 
-        /* Dark Mode / Light Mode Theme Switcher */
         function applyThemeMode(mode) {
             const isDark = mode === 'dark';
             document.documentElement.classList.toggle('dark-theme', isDark);
@@ -1335,13 +1497,13 @@
                 headerRegisterCta: 'Register',
                 heroBadge: 'Global Creative & Leadership Training Academy',
                 heroTitle: 'Illuminating Global Talent Through Creative Excellence',
-                heroSubtitle: 'Welcome to LIGHT HOUSE CREATIVES INTERNATIONAL. Enroll in our flagship global cohort training, join our active WhatsApp learning community, access live Zoom sessions, and claim your verified digital certificate upon completion.',
+                heroSubtitle: 'Welcome to LIGHT HOUSE CREATIVES INTERNATIONAL. Enroll in our flagship global cohort training, join our active WhatsApp learning community, access live Telegram training sessions, and claim your verified digital certificate upon completion.',
                 heroPrimaryBtn: 'Register for Training',
                 heroSecondaryBtn: 'Open Student Portal',
                 stat1Val: '5,000+',
                 stat1Lbl: 'Cohort Capacity',
                 stat2Val: 'Live',
-                stat2Lbl: 'Zoom & WhatsApp Hub',
+                stat2Lbl: 'Telegram & WhatsApp Hub',
                 stat3Val: '100%',
                 stat3Lbl: 'Verified Certificates',
                 programSectionHeading: 'Flagship Training Program',
@@ -1350,10 +1512,10 @@
                 founderRole: 'President, LIGHT HOUSE CREATIVES INTERNATIONAL',
                 founderBio: 'Dedicated to raising a new generation of purpose-driven creatives, communicators, and innovators across nations. Through LIGHT HOUSE CREATIVES INTERNATIONAL, thousands of emerging leaders are mentored in excellence, ethical leadership, and practical creative mastery.',
                 founderQuote: '"Every creative carries a light meant to illuminate nations. When skill meets purpose, transformation becomes unstoppable."',
-                founderPhoto: 'https://placehold.co/600x650/1E293B/F59E0B?text=Founder+Portrait',
+                founderPhoto: DEFAULT_FOUNDER_PORTRAIT_SVG,
                 footerBrandTitle: 'LIGHT HOUSE CREATIVES INTERNATIONAL',
                 footerBrandDesc: 'A global creative and leadership training academy equipping artists, communicators, media innovators, and purpose-driven leaders across nations with practical mastery and verified certification.',
-                footerBrandHighlight: 'Global Cohort Capacity: 5,000+ Students • Live Zoom & WhatsApp Mentorship',
+                footerBrandHighlight: 'Global Cohort Capacity: 5,000+ Students • Live Telegram & WhatsApp Mentorship',
                 footerTagline: 'Illuminating Global Talent Through Creative Excellence'
             },
             about: {
@@ -1362,7 +1524,7 @@
                 mission: 'To train, mentor, and certify creative minds worldwide through structured, accessible, and high-impact cohort programs.',
                 vision: 'To see illuminated creatives leading transformation across media, arts, business, and communities in every nation.',
                 team: [
-                    { name: 'Executive Director', role: 'Academic & Cohort Dean', bio: 'Oversees global curriculum standards, live Zoom masterclasses, and student mentorship.' },
+                    { name: 'Executive Director', role: 'Academic & Cohort Dean', bio: 'Oversees global curriculum standards, live Telegram masterclasses, and student mentorship.' },
                     { name: 'Creative Faculty Lead', role: 'Media & Brand Strategy', bio: 'Guides students in hands-on digital production, storytelling, and creative leadership.' },
                     { name: 'Student Success Coordinator', role: 'Admissions & Certification', bio: 'Supports student onboarding, WhatsApp community coordination, and certificate verification.' }
                 ]
@@ -1372,16 +1534,27 @@
                     id: 'program-1',
                     title: 'Global Creative Excellence & Leadership Masterclass (Flagship Cohort)',
                     category: 'Flagship Cohort Training',
-                    fee: '$50 / ₦50,000',
-                    schedule: '6 Weeks Intensive • Live on Zoom + WhatsApp Mentorship',
+                    fee: '₦1,500',
+                    earlyFee: '₦1,500',
+                    lateFee: '₦2,000',
+                    earlyCutoffISO: '2026-12-05T23:59',
+                    earlyInterval: 'Nov 24 – Dec 5, 2026',
+                    lateInterval: 'Dec 6 – Dec 11, 2026',
+                    startDateTimeISO: '2026-12-12T16:00',
+                    paymentDeadline: 'Friday, December 11, 2026 • 11:59 PM WAT',
+                    schedule: '6 Weeks Intensive • Live on Telegram + WhatsApp Mentorship',
+                    bankName: 'Zenith Bank / First Bank',
+                    accountName: 'LIGHT HOUSE CREATIVES INTERNATIONAL',
+                    accountNumber: '1234567890',
+                    flierUrl: '',
                     description: 'Our comprehensive flagship program covering creative mastery, digital media production, brand leadership, purpose-driven innovation, and capstone certification.',
-                    paymentInstructions: 'Make payment to LIGHT HOUSE CREATIVES INTERNATIONAL official account, then enter your transaction reference and upload your receipt screenshot below.',
+                    paymentInstructions: 'Transfer your tuition fee to the official bank account above, then enter your transaction reference and upload your receipt screenshot below.',
                     whatsappLink: 'https://chat.whatsapp.com/lighthousecreativesintl',
-                    zoomLink: 'https://zoom.us/j/98765432100',
-                    zoomPasscode: 'LHCI2026',
-                    zoomDate: 'Saturdays • Next Cohort Session',
-                    zoomTime: '4:00 PM WAT / 3:00 PM GMT',
-                    zoomInstructions: 'Join 10 minutes early with your registered full name displayed on Zoom. Keep your microphone muted during lectures and use the Q&A chat.'
+                    telegramLink: 'https://t.me/+lighthousecreativesintl',
+                    telegramPasscode: 'LHCI2026',
+                    telegramDate: 'Saturdays • Starting Dec 12, 2026',
+                    telegramTime: '4:00 PM WAT / 3:00 PM GMT',
+                    telegramInstructions: 'Join the private Telegram training channel 10 minutes before class starts using your registered full name. Follow the pinned session guidelines.'
                 }
             ],
             registrations: [],
@@ -1391,7 +1564,7 @@
                     name: 'Daniel Chukwuemeka',
                     role: 'Creative Director & Media Strategist',
                     course: 'Global Creative Excellence & Leadership Masterclass',
-                    text: 'LIGHT HOUSE CREATIVES INTERNATIONAL transformed how I approach creativity and leadership. The live Zoom mentorship and WhatsApp community gave me clarity, global connections, and practical skills.',
+                    text: 'LIGHT HOUSE CREATIVES INTERNATIONAL transformed how I approach creativity and leadership. The live Telegram mentorship and WhatsApp community gave me clarity, global connections, and practical skills.',
                     avatar: 'https://placehold.co/150x150/1E293B/F59E0B?text=DC',
                     createdAt: Date.now() - 86400000
                 },
@@ -1412,12 +1585,19 @@
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (!raw) return JSON.parse(JSON.stringify(defaultState));
                 const parsed = JSON.parse(raw);
+                const mergedProgs = (Array.isArray(parsed.programs) && parsed.programs.length)
+                    ? parsed.programs.map((p, idx) => ({ ...defaultState.programs[0], ...p, id: p.id || `program-${idx + 1}` }))
+                    : defaultState.programs;
+                const brandingObj = { ...defaultState.branding, ...(parsed.branding || {}) };
+                if (!brandingObj.founderPhoto || brandingObj.founderPhoto.includes('placehold.co')) {
+                    brandingObj.founderPhoto = DEFAULT_FOUNDER_PORTRAIT_SVG;
+                }
                 return {
                     ...defaultState,
                     ...parsed,
-                    branding: { ...defaultState.branding, ...(parsed.branding || {}) },
+                    branding: brandingObj,
                     about: { ...defaultState.about, ...(parsed.about || {}) },
-                    programs: (Array.isArray(parsed.programs) && parsed.programs.length) ? [parsed.programs[0]] : defaultState.programs,
+                    programs: mergedProgs,
                     registrations: Array.isArray(parsed.registrations) ? parsed.registrations : [],
                     testimonies: (Array.isArray(parsed.testimonies) && parsed.testimonies.length) ? parsed.testimonies : defaultState.testimonies
                 };
@@ -1493,10 +1673,15 @@
                 if (cfgRes.ok) {
                     const cfg = await cfgRes.json();
                     if (cfg && typeof cfg === 'object') {
-                        if (cfg.branding) appState.branding = { ...appState.branding, ...cfg.branding };
+                        if (cfg.branding) {
+                            appState.branding = { ...appState.branding, ...cfg.branding };
+                            if (!appState.branding.founderPhoto || appState.branding.founderPhoto.includes('placehold.co')) {
+                                appState.branding.founderPhoto = DEFAULT_FOUNDER_PORTRAIT_SVG;
+                            }
+                        }
                         if (cfg.about) appState.about = { ...appState.about, ...cfg.about };
                         if (Array.isArray(cfg.programs) && cfg.programs.length) {
-                            appState.programs = [cfg.programs[0]];
+                            appState.programs = cfg.programs.map((p, idx) => ({ ...defaultState.programs[0], ...p, id: p.id || `program-${idx + 1}` }));
                         }
                     }
                 }
@@ -1677,7 +1862,7 @@
             setEl('hero-stat1-val', b.stat1Val || '5,000+');
             setEl('hero-stat1-lbl', b.stat1Lbl || 'Cohort Capacity');
             setEl('hero-stat2-val', b.stat2Val || 'Live');
-            setEl('hero-stat2-lbl', b.stat2Lbl || 'Zoom & WhatsApp Hub');
+            setEl('hero-stat2-lbl', b.stat2Lbl || 'Telegram & WhatsApp Hub');
             setEl('hero-stat3-val', b.stat3Val || '100%');
             setEl('hero-stat3-lbl', b.stat3Lbl || 'Verified Certificates');
 
@@ -1699,29 +1884,231 @@
             setEl('footer-tagline-text', b.footerTagline || 'Illuminating Global Talent Through Creative Excellence');
         }
 
-        /* Render Single Flagship Program */
+        /* Render Flagship Program + Live Countdown + Payment Account Summary */
+        function getProgramPricingState(prog) {
+            const p = prog || appState.programs[0] || defaultState.programs[0];
+            const earlyFee = p.earlyFee || '₦1,500';
+            const lateFee = p.lateFee || '₦2,000';
+            const cutoffMs = p.earlyCutoffISO ? new Date(p.earlyCutoffISO).getTime() : NaN;
+            const isLate = !isNaN(cutoffMs) && Date.now() > cutoffMs;
+            return {
+                isLate,
+                earlyFee,
+                lateFee,
+                activeFee: isLate ? lateFee : earlyFee,
+                earlyInterval: p.earlyInterval || 'Nov 24 – Dec 5, 2026',
+                lateInterval: p.lateInterval || 'Dec 6 – Dec 11, 2026'
+            };
+        }
+
+        function formatTrainingDateTimeDisplay(isoStr) {
+            if (!isoStr) return 'Schedule To Be Announced';
+            const dt = new Date(isoStr);
+            if (isNaN(dt.getTime())) return isoStr;
+            return dt.toLocaleString([], {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        let lastKnownLatePricingFlag = null;
+
+        function startLiveTrainingCountdown() {
+            if (countdownIntervalId) clearInterval(countdownIntervalId);
+
+            const tick = () => {
+                const prog = appState.programs[0] || defaultState.programs[0];
+                const pricing = getProgramPricingState(prog);
+                if (lastKnownLatePricingFlag !== null && lastKnownLatePricingFlag !== pricing.isLate) {
+                    lastKnownLatePricingFlag = pricing.isLate;
+                    renderPrograms();
+                    populateProgramDropdowns();
+                    return;
+                }
+                lastKnownLatePricingFlag = pricing.isLate;
+
+                const dtLabel = formatTrainingDateTimeDisplay(prog.startDateTimeISO);
+                const topSchedEl = document.getElementById('top-cd-schedule-text');
+                const heroDtEl = document.getElementById('hero-training-datetime-label');
+                const heroDlEl = document.getElementById('hero-payment-deadline-label');
+                const cardDtEl = document.getElementById('card-training-datetime-label');
+                const cardDlEl = document.getElementById('card-payment-deadline-label');
+
+                if (topSchedEl) topSchedEl.textContent = `${dtLabel} • ${pricing.isLate ? 'Late Reg' : 'Early Bird'} (${pricing.activeFee})`;
+                if (heroDtEl) heroDtEl.textContent = `Starts: ${dtLabel}`;
+                if (heroDlEl) heroDlEl.textContent = prog.paymentDeadline || 'TBA';
+                if (cardDtEl) cardDtEl.textContent = dtLabel;
+                if (cardDlEl) cardDlEl.textContent = prog.paymentDeadline || 'TBA';
+
+                const targetMs = prog.startDateTimeISO ? new Date(prog.startDateTimeISO).getTime() : NaN;
+                const diff = !isNaN(targetMs) ? Math.max(0, targetMs - Date.now()) : 0;
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const mins = Math.floor((diff / (1000 * 60)) % 60);
+                const secs = Math.floor((diff / 1000) % 60);
+
+                const pad = (n) => String(n).padStart(2, '0');
+                const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+                setTxt('top-cd-days', pad(days));
+                setTxt('top-cd-hours', pad(hours));
+                setTxt('top-cd-mins', pad(mins));
+                setTxt('top-cd-secs', pad(secs));
+                setTxt('cd-days', pad(days));
+                setTxt('cd-hours', pad(hours));
+                setTxt('cd-mins', pad(mins));
+                setTxt('cd-secs', pad(secs));
+                setTxt('prog-cd-days', pad(days));
+                setTxt('prog-cd-hours', pad(hours));
+                setTxt('prog-cd-mins', pad(mins));
+                setTxt('prog-cd-secs', pad(secs));
+            };
+
+            tick();
+            countdownIntervalId = setInterval(tick, 1000);
+        }
+
         function renderPrograms() {
             const grid = document.getElementById('programs-grid');
             if (!grid) return;
             const prog = appState.programs[0] || defaultState.programs[0];
+            const dtDisplay = formatTrainingDateTimeDisplay(prog.startDateTimeISO);
+            const pricing = getProgramPricingState(prog);
+            const flierHtml = prog.flierUrl
+                ? `<div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900/5 p-2 sm:p-3 flex flex-col items-center">
+                       <img src="${prog.flierUrl}" alt="${prog.title} Flier" onclick="openFlierLightbox('${prog.id}')" class="w-full max-h-[460px] object-contain rounded-xl cursor-zoom-in shadow-sm" title="Click to enlarge flier">
+                       <span class="text-[11px] text-slate-500 mt-2 font-medium flex items-center gap-1"><i data-lucide="zoom-in" class="w-3.5 h-3.5 text-amber-600"></i> Click flier to view full size</span>
+                   </div>`
+                : '';
+
+            const priceDisplayHtml = pricing.isLate
+                ? `<div class="text-right">
+                       <div class="flex items-baseline justify-end gap-2">
+                           <span class="text-base sm:text-lg font-bold text-slate-400 line-through decoration-2 decoration-rose-500">${pricing.earlyFee}</span>
+                           <span class="font-display text-2xl sm:text-3xl font-extrabold text-rose-600">${pricing.lateFee}</span>
+                       </div>
+                       <span class="inline-block mt-0.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-700 text-[10px] font-extrabold uppercase tracking-wider">Late Registration Active</span>
+                   </div>`
+                : `<div class="text-right">
+                       <div class="flex items-baseline justify-end gap-2">
+                           <span class="font-display text-2xl sm:text-3xl font-extrabold text-emerald-600">${pricing.earlyFee}</span>
+                           <span class="text-base sm:text-lg font-bold text-slate-400 line-through decoration-2 decoration-slate-400">${pricing.lateFee}</span>
+                       </div>
+                       <span class="inline-block mt-0.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 text-[10px] font-extrabold uppercase tracking-wider">Early Registration Active</span>
+                   </div>`;
+
             grid.innerHTML = `
-                <div class="bg-slate-50 rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm rainbow-border-card">
-                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="bg-slate-50 rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm rainbow-border-card space-y-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
                         <span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-800 text-xs font-bold uppercase tracking-wider">${prog.category || 'Flagship Cohort'}</span>
-                        <span class="font-display text-2xl font-extrabold text-slate-900">${prog.fee}</span>
+                        ${priceDisplayHtml}
                     </div>
-                    <h3 class="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">${prog.title}</h3>
-                    <p class="text-xs sm:text-sm font-semibold text-amber-700 mt-1.5 flex items-center gap-1.5">
-                        <i data-lucide="calendar" class="w-4 h-4"></i>
-                        <span>${prog.schedule}</span>
-                    </p>
-                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed mt-4">${prog.description}</p>
-                    <div class="grid sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-slate-200/80 text-xs font-semibold text-slate-700">
+
+                    ${flierHtml}
+
+                    <div>
+                        <h3 class="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">${prog.title}</h3>
+                        <p class="text-xs sm:text-sm font-semibold text-amber-700 mt-1.5 flex items-center gap-1.5">
+                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                            <span>${prog.schedule}</span>
+                        </p>
+                    </div>
+
+                    <!-- Early & Late Registration Windows -->
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <div class="p-4 rounded-2xl border ${!pricing.isLate ? 'bg-emerald-50/80 border-emerald-400 shadow-xs' : 'bg-white border-slate-200 opacity-75'}">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-extrabold uppercase tracking-wider ${!pricing.isLate ? 'text-emerald-800' : 'text-slate-500'}">Early Registration</span>
+                                <span class="font-display text-lg font-extrabold ${pricing.isLate ? 'line-through text-slate-400' : 'text-emerald-700'}">${pricing.earlyFee}</span>
+                            </div>
+                            <p class="text-xs font-semibold ${!pricing.isLate ? 'text-emerald-900' : 'text-slate-500'} mt-1">${pricing.earlyInterval}</p>
+                        </div>
+                        <div class="p-4 rounded-2xl border ${pricing.isLate ? 'bg-rose-50/80 border-rose-400 shadow-xs' : 'bg-white border-slate-200'}">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-extrabold uppercase tracking-wider ${pricing.isLate ? 'text-rose-800' : 'text-slate-500'}">Late Registration</span>
+                                <span class="font-display text-lg font-extrabold ${!pricing.isLate ? 'line-through text-slate-400' : 'text-rose-700'}">${pricing.lateFee}</span>
+                            </div>
+                            <p class="text-xs font-semibold ${pricing.isLate ? 'text-rose-900' : 'text-slate-600'} mt-1">${pricing.lateInterval}</p>
+                        </div>
+                    </div>
+
+                    <!-- Training Schedule, Deadline & Live Countdown Box -->
+                    <div class="grid sm:grid-cols-2 gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200">
+                        <div class="space-y-2 text-xs sm:text-sm">
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="clock" class="w-4 h-4 text-amber-600 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <span class="text-slate-500 block text-[11px] uppercase font-bold">Training Date & Time</span>
+                                    <strong id="card-training-datetime-label" class="text-slate-900">${dtDisplay}</strong>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 pt-1">
+                                <i data-lucide="alarm-clock" class="w-4 h-4 text-rose-600 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <span class="text-slate-500 block text-[11px] uppercase font-bold">Payment Deadline</span>
+                                    <strong id="card-payment-deadline-label" class="text-rose-700">${prog.paymentDeadline || 'TBA'}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900 text-white rounded-xl p-3.5 text-center flex flex-col justify-center">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Countdown to Commencement</span>
+                            <div class="grid grid-cols-4 gap-1.5 mt-2">
+                                <div class="bg-white/10 rounded-lg py-1.5">
+                                    <span id="prog-cd-days" class="font-display text-base sm:text-lg font-extrabold block leading-none">00</span>
+                                    <span class="text-[9px] text-slate-400 uppercase">Days</span>
+                                </div>
+                                <div class="bg-white/10 rounded-lg py-1.5">
+                                    <span id="prog-cd-hours" class="font-display text-base sm:text-lg font-extrabold text-amber-400 block leading-none">00</span>
+                                    <span class="text-[9px] text-slate-400 uppercase">Hrs</span>
+                                </div>
+                                <div class="bg-white/10 rounded-lg py-1.5">
+                                    <span id="prog-cd-mins" class="font-display text-base sm:text-lg font-extrabold text-emerald-400 block leading-none">00</span>
+                                    <span class="text-[9px] text-slate-400 uppercase">Mins</span>
+                                </div>
+                                <div class="bg-white/10 rounded-lg py-1.5">
+                                    <span id="prog-cd-secs" class="font-display text-base sm:text-lg font-extrabold text-sky-400 block leading-none">00</span>
+                                    <span class="text-[9px] text-slate-400 uppercase">Secs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed">${prog.description}</p>
+
+                    <!-- Official Payment Bank Account Details Card -->
+                    <div class="p-4 sm:p-5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2 text-xs sm:text-sm">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-amber-800 block">Official Tuition Payment Account</span>
+                        <div class="grid sm:grid-cols-3 gap-2 pt-1">
+                            <div class="bg-white p-3 rounded-xl border border-amber-200/80">
+                                <span class="text-[10px] uppercase text-slate-500 font-bold block">Bank Name</span>
+                                <strong class="text-slate-900">${prog.bankName || 'Zenith Bank / First Bank'}</strong>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-amber-200/80">
+                                <span class="text-[10px] uppercase text-slate-500 font-bold block">Account Name</span>
+                                <strong class="text-slate-900">${prog.accountName || 'LIGHT HOUSE CREATIVES INTERNATIONAL'}</strong>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-amber-200/80 flex items-center justify-between gap-2">
+                                <div>
+                                    <span class="text-[10px] uppercase text-slate-500 font-bold block">Account Number</span>
+                                    <strong class="font-mono text-base text-slate-950 select-all">${prog.accountNumber || '1234567890'}</strong>
+                                </div>
+                                <button type="button" onclick="copyPaymentAccountNumber()" class="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-bold shrink-0">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid sm:grid-cols-3 gap-3 pt-4 border-t border-slate-200/80 text-xs font-semibold text-slate-700">
                         <div class="flex items-center gap-2"><i data-lucide="message-circle" class="w-4 h-4 text-emerald-600"></i> WhatsApp Cohort Community</div>
-                        <div class="flex items-center gap-2"><i data-lucide="video" class="w-4 h-4 text-blue-600"></i> Live Interactive Zoom Sessions</div>
+                        <div class="flex items-center gap-2"><i data-lucide="send" class="w-4 h-4 text-sky-600"></i> Live Interactive Telegram Sessions</div>
                         <div class="flex items-center gap-2"><i data-lucide="award" class="w-4 h-4 text-amber-600"></i> Verified Digital Certificate</div>
                     </div>
-                    <div class="mt-7 flex flex-wrap gap-3">
+
+                    <div class="flex flex-wrap gap-3">
                         <button onclick="navigateTo('register')" class="px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all flex items-center gap-2 shadow-md">
                             <span>Register Now & Join WhatsApp Group</span>
                             <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -1729,23 +2116,79 @@
                     </div>
                 </div>
             `;
+            startLiveTrainingCountdown();
+        }
+
+        function openFlierLightbox(progId) {
+            const prog = appState.programs.find(p => p.id === progId) || appState.programs[0];
+            if (!prog || !prog.flierUrl) return;
+            document.getElementById('inspect-modal-title').textContent = `${prog.title} — Official Flier`;
+            document.getElementById('inspect-modal-body').innerHTML = `
+                <img src="${prog.flierUrl}" alt="${prog.title} Flier" class="w-full max-h-[75vh] object-contain rounded-2xl border border-slate-700 bg-black">
+            `;
+            document.getElementById('admin-inspect-modal').classList.remove('hidden');
+        }
+
+        function copyPaymentAccountNumber() {
+            const prog = appState.programs[0] || defaultState.programs[0];
+            const acct = prog.accountNumber || '1234567890';
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(acct);
+            }
+            showToast(`Account number ${acct} copied to clipboard!`, 'success');
         }
 
         function populateProgramDropdowns() {
             const select = document.getElementById('reg-program');
             if (!select) return;
-            select.innerHTML = appState.programs.map(p => `<option value="${p.id}">${p.title} (${p.fee})</option>`).join('');
+            select.innerHTML = appState.programs.map(p => {
+                const pricing = getProgramPricingState(p);
+                return `<option value="${p.id}">${p.title} (${pricing.activeFee} — ${pricing.isLate ? 'Late Reg' : 'Early Reg'})</option>`;
+            }).join('');
             updateRegistrationPaymentInfo();
         }
 
         function updateRegistrationPaymentInfo() {
-            const prog = appState.programs[0] || defaultState.programs[0];
-            const feeEl = document.getElementById('reg-program-fee');
-            const schedEl = document.getElementById('reg-program-schedule');
-            const payEl = document.getElementById('reg-payment-instructions');
-            if (feeEl) feeEl.textContent = prog.fee;
-            if (schedEl) schedEl.textContent = prog.schedule;
-            if (payEl) payEl.textContent = prog.paymentInstructions;
+            const select = document.getElementById('reg-program');
+            const selectedId = select ? select.value : '';
+            const prog = appState.programs.find(p => p.id === selectedId) || appState.programs[0] || defaultState.programs[0];
+            const pricing = getProgramPricingState(prog);
+            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
+
+            const feeBox = document.getElementById('reg-program-fee-box');
+            const tierBadge = document.getElementById('reg-pricing-tier-badge');
+            if (feeBox) {
+                feeBox.innerHTML = pricing.isLate
+                    ? `<span class="text-xs font-bold text-slate-400 line-through mr-1.5">${pricing.earlyFee}</span><span class="font-display text-xl font-extrabold text-rose-600">${pricing.lateFee}</span>`
+                    : `<span class="font-display text-xl font-extrabold text-emerald-600">${pricing.earlyFee}</span><span class="text-xs font-bold text-slate-400 line-through ml-1.5">${pricing.lateFee}</span>`;
+            }
+            if (tierBadge) {
+                tierBadge.className = pricing.isLate
+                    ? 'inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-700'
+                    : 'inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700';
+                tierBadge.textContent = pricing.isLate ? 'Late Registration Active' : 'Early Registration Active';
+            }
+            setTxt('reg-program-datetime', formatTrainingDateTimeDisplay(prog.startDateTimeISO));
+            setTxt('reg-early-interval', `${pricing.earlyInterval} (${pricing.earlyFee})`);
+            setTxt('reg-late-interval', `${pricing.lateInterval} (${pricing.lateFee})`);
+            setTxt('reg-program-schedule', prog.schedule || '');
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
+            setVal('reg-bank-name', prog.bankName || 'Zenith Bank / First Bank');
+            setVal('reg-account-name', prog.accountName || 'LIGHT HOUSE CREATIVES INTERNATIONAL');
+            setVal('reg-account-number', prog.accountNumber || '1234567890');
+            setVal('reg-payment-instructions', prog.paymentInstructions);
+
+            let regFlierEl = document.getElementById('reg-program-flier-box');
+            if (!regFlierEl && select && select.parentElement) {
+                regFlierEl = document.createElement('div');
+                regFlierEl.id = 'reg-program-flier-box';
+                select.parentElement.appendChild(regFlierEl);
+            }
+            if (regFlierEl) {
+                regFlierEl.innerHTML = prog.flierUrl
+                    ? `<div class="pt-2"><img src="${prog.flierUrl}" alt="${prog.title} Flier" onclick="openFlierLightbox('${prog.id}')" class="w-full max-h-64 object-contain rounded-xl border border-slate-200 bg-white p-1.5 cursor-zoom-in shadow-xs" title="Click to enlarge flier"></div>`
+                    : '';
+            }
         }
 
         /* Student Registration + Immediate WhatsApp Group Link */
@@ -1758,7 +2201,9 @@
             }
 
             try {
-                const prog = appState.programs[0] || defaultState.programs[0];
+                const select = document.getElementById('reg-program');
+                const selectedId = select ? select.value : '';
+                const prog = appState.programs.find(p => p.id === selectedId) || appState.programs[0] || defaultState.programs[0];
                 const fullName = document.getElementById('reg-fullname').value.trim();
                 const email = document.getElementById('reg-email').value.trim().toLowerCase();
                 const phone = document.getElementById('reg-phone').value.trim();
@@ -1936,7 +2381,7 @@
             if (navDot) navDot.classList.remove('hidden');
             if (headerBtnText) headerBtnText.textContent = validStudent.fullName.split(' ')[0];
 
-            const prog = appState.programs[0] || defaultState.programs[0];
+            const prog = appState.programs.find(p => p.id === validStudent.programId) || appState.programs[0] || defaultState.programs[0];
             document.getElementById('student-dash-avatar').src = validStudent.avatar || 'https://placehold.co/150x150/1E293B/F59E0B?text=Student';
             document.getElementById('student-dash-name').textContent = validStudent.fullName;
             document.getElementById('student-dash-course').textContent = validStudent.programTitle || prog.title;
@@ -1949,26 +2394,32 @@
             if (lockWa) lockWa.href = waUrl;
 
             const statusBadge = document.getElementById('student-dash-status-badge');
-            const zoomLocked = document.getElementById('student-zoom-locked');
-            const zoomUnlocked = document.getElementById('student-zoom-unlocked');
+            const tgLocked = document.getElementById('student-telegram-locked');
+            const tgUnlocked = document.getElementById('student-telegram-unlocked');
+
+            const tgLink = prog.telegramLink || 'https://t.me/+lighthousecreativesintl';
+            const tgPass = prog.telegramPasscode || 'LHCI2026';
+            const tgDate = prog.telegramDate || 'TBA';
+            const tgTime = prog.telegramTime || 'TBA';
+            const tgInst = prog.telegramInstructions || '';
 
             if (validStudent.paymentApproved) {
                 statusBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300';
-                statusBadge.textContent = 'Payment Approved • Zoom Unlocked';
-                zoomLocked.classList.add('hidden');
-                zoomUnlocked.classList.remove('hidden');
+                statusBadge.textContent = 'Payment Approved • Telegram Unlocked';
+                tgLocked.classList.add('hidden');
+                tgUnlocked.classList.remove('hidden');
 
-                document.getElementById('student-zoom-join-btn').href = prog.zoomLink || '#';
-                document.getElementById('student-zoom-link-text').textContent = prog.zoomLink || 'Not set';
-                document.getElementById('student-zoom-passcode-text').textContent = prog.zoomPasscode || 'LHCI2026';
-                document.getElementById('student-zoom-date-text').textContent = prog.zoomDate || 'TBA';
-                document.getElementById('student-zoom-time-text').textContent = prog.zoomTime || 'TBA';
-                document.getElementById('student-zoom-instructions-text').textContent = prog.zoomInstructions || '';
+                document.getElementById('student-telegram-join-btn').href = tgLink;
+                document.getElementById('student-telegram-link-text').textContent = tgLink;
+                document.getElementById('student-telegram-passcode-text').textContent = tgPass;
+                document.getElementById('student-telegram-date-text').textContent = tgDate;
+                document.getElementById('student-telegram-time-text').textContent = tgTime;
+                document.getElementById('student-telegram-instructions-text').textContent = tgInst;
             } else {
                 statusBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300';
                 statusBadge.textContent = 'Pending Payment Approval';
-                zoomLocked.classList.remove('hidden');
-                zoomUnlocked.classList.add('hidden');
+                tgLocked.classList.remove('hidden');
+                tgUnlocked.classList.add('hidden');
                 document.getElementById('student-receipt-ref-label').textContent = validStudent.paymentRef || 'Submitted';
             }
 
@@ -2004,7 +2455,7 @@
         }
 
         function switchStudentTab(tab) {
-            ['zoom', 'certificate', 'testimony', 'profile'].forEach(t => {
+            ['telegram', 'certificate', 'testimony', 'profile'].forEach(t => {
                 const btn = document.getElementById(`stab-${t}`);
                 const panel = document.getElementById(`spanel-${t}`);
                 if (btn) btn.className = t === tab
@@ -2371,19 +2822,19 @@
                         </td>
                         <td class="py-3.5 px-3">
                             <p class="font-semibold text-amber-300">Ref: ${r.paymentRef || 'N/A'}</p>
-                            <button onclick="viewStudentReceipt('${r.id}')" class="mt-1 text-[11px] text-blue-400 hover:underline font-semibold">
+                            <button onclick="viewStudentReceipt('${r.id}')" class="mt-1 text-[11px] text-sky-400 hover:underline font-semibold">
                                 View Receipt (${r.receiptFileName || 'Image'})
                             </button>
                         </td>
                         <td class="py-3.5 px-3">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.paymentApproved ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}">
-                                ${r.paymentApproved ? 'Zoom Unlocked' : 'Awaiting Approval'}
+                                ${r.paymentApproved ? 'Telegram Unlocked' : 'Awaiting Approval'}
                             </span>
                             <p class="text-[10px] text-slate-400 mt-1">Cert: ${r.certificateIssued ? (r.certificateFileName || 'Uploaded') : 'Pending'}</p>
                         </td>
                         <td class="py-3.5 px-3 text-right space-x-1.5 whitespace-nowrap">
                             <button onclick="approveStudentPaymentAndEmail('${r.id}')" class="px-3 py-1.5 rounded-lg ${r.paymentApproved ? 'bg-emerald-700 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'} font-bold text-[11px]">
-                                ${r.paymentApproved ? 'Re-send Zoom Email' : 'Approve Payment & Send Zoom'}
+                                ${r.paymentApproved ? 'Re-send Telegram Email' : 'Approve Payment & Send Telegram'}
                             </button>
                             <button onclick="openUploadCertificateModal('${r.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px]">
                                 ${r.certificateIssued ? 'Replace Cert' : 'Upload Cert'}
@@ -2409,7 +2860,7 @@
                     : `<p class="p-4 rounded-xl bg-slate-800 text-slate-300">Receipt File: ${r.receiptFileName}</p>`}
                 <div class="pt-3 flex justify-end gap-2">
                     <button onclick="approveStudentPaymentAndEmail('${r.id}'); document.getElementById('admin-inspect-modal').classList.add('hidden');" class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">
-                        Approve Payment & Email Zoom Details
+                        Approve Payment & Email Telegram Details
                     </button>
                 </div>
             `;
@@ -2419,7 +2870,13 @@
         async function approveStudentPaymentAndEmail(regId) {
             const student = appState.registrations.find(r => r.id === regId);
             if (!student) return;
-            const prog = appState.programs[0] || defaultState.programs[0];
+            const prog = appState.programs.find(p => p.id === student.programId) || appState.programs[0] || defaultState.programs[0];
+
+            const tgLink = prog.telegramLink || 'https://t.me/+lighthousecreativesintl';
+            const tgPass = prog.telegramPasscode || 'LHCI2026';
+            const tgDate = prog.telegramDate || 'TBA';
+            const tgTime = prog.telegramTime || 'TBA';
+            const tgInst = prog.telegramInstructions || '';
 
             student.paymentApproved = true;
             student.updatedAt = Date.now();
@@ -2429,17 +2886,17 @@
             renderAdminDashboard();
             updateStudentAuthViews();
 
-            const subjectText = `Payment Approved & Zoom Class Details — ${prog.title}`;
+            const subjectText = `Payment Approved & Telegram Class Details — ${prog.title}`;
             const emailMessage = `Dear ${student.fullName},
 
 Congratulations! Your payment for ${prog.title} at LIGHT HOUSE CREATIVES INTERNATIONAL has been approved.
 
-Here are your official Live Zoom Class details:
-• Zoom Meeting Link: ${prog.zoomLink}
-• Zoom Passcode: ${prog.zoomPasscode}
-• Class Date(s): ${prog.zoomDate}
-• Class Time: ${prog.zoomTime}
-• Joining Instructions: ${prog.zoomInstructions}
+Here are your official Live Telegram Training Class details:
+• Telegram Channel / Group Link: ${tgLink}
+• Telegram Access Code: ${tgPass}
+• Class Date(s): ${tgDate}
+• Class Time: ${tgTime}
+• Joining Instructions: ${tgInst}
 
 Official WhatsApp Cohort Group: ${prog.whatsappLink}
 
@@ -2453,11 +2910,11 @@ LIGHT HOUSE CREATIVES INTERNATIONAL`;
                     body: JSON.stringify({
                         _subject: subjectText,
                         student_name: student.fullName,
-                        zoom_link: prog.zoomLink,
-                        zoom_passcode: prog.zoomPasscode,
-                        class_date: prog.zoomDate,
-                        class_time: prog.zoomTime,
-                        instructions: prog.zoomInstructions,
+                        telegram_link: tgLink,
+                        telegram_access_code: tgPass,
+                        class_date: tgDate,
+                        class_time: tgTime,
+                        instructions: tgInst,
                         message: emailMessage
                     })
                 });
@@ -2466,23 +2923,23 @@ LIGHT HOUSE CREATIVES INTERNATIONAL`;
             const safeMsgAttr = emailMessage.replace(/"/g, '&quot;');
             const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(student.email)}&su=${encodeURIComponent(subjectText)}&body=${encodeURIComponent(emailMessage)}`;
 
-            document.getElementById('inspect-modal-title').textContent = `Payment Approved & Zoom Email Dispatched`;
+            document.getElementById('inspect-modal-title').textContent = `Payment Approved & Telegram Email Dispatched`;
             document.getElementById('inspect-modal-body').innerHTML = `
                 <div class="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
-                    <strong>Zoom Access Unlocked!</strong> Details have been dispatched to <strong>${student.email}</strong> and unlocked inside their Student Portal.
+                    <strong>Telegram Class Access Unlocked!</strong> Details have been dispatched to <strong>${student.email}</strong> and unlocked inside their Student Portal.
                 </div>
-                <textarea id="zoom-dispatch-preview" rows="8" readonly class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-200 font-mono">${emailMessage}</textarea>
+                <textarea id="telegram-dispatch-preview" rows="8" readonly class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-200 font-mono">${emailMessage}</textarea>
                 <div class="flex flex-wrap justify-end gap-2 pt-1">
-                    <button type="button" data-copy-text="${safeMsgAttr}" onclick="navigator.clipboard.writeText(this.getAttribute('data-copy-text')); showToast('Zoom details copied for WhatsApp/SMS!', 'success');" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">
+                    <button type="button" data-copy-text="${safeMsgAttr}" onclick="navigator.clipboard.writeText(this.getAttribute('data-copy-text')); showToast('Telegram class details copied for WhatsApp/SMS!', 'success');" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">
                         Copy Message (WhatsApp/SMS)
                     </button>
-                    <a href="${gmailComposeUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs">
+                    <a href="${gmailComposeUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs">
                         Open in Gmail Web
                     </a>
                 </div>
             `;
             document.getElementById('admin-inspect-modal').classList.remove('hidden');
-            showToast(`Payment approved & Zoom email sent to ${student.fullName}!`, 'success');
+            showToast(`Payment approved & Telegram email sent to ${student.fullName}!`, 'success');
         }
 
         async function toggleStudentRestriction(regId) {
@@ -2563,77 +3020,44 @@ LIGHT HOUSE CREATIVES INTERNATIONAL`;
             }
         }
 
-        function generateDefaultCertificateDataUrl(student, prog) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 1200;
-            canvas.height = 850;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#0B0F19';
-            ctx.fillRect(0, 0, 1200, 850);
-            ctx.strokeStyle = '#F59E0B';
-            ctx.lineWidth = 10;
-            ctx.strokeRect(36, 36, 1128, 778);
-
-            ctx.fillStyle = '#F59E0B';
-            ctx.font = 'bold 26px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('LIGHT HOUSE CREATIVES INTERNATIONAL', 600, 140);
-
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 52px sans-serif';
-            ctx.fillText('CERTIFICATE OF COMPLETION', 600, 230);
-
-            ctx.fillStyle = '#CBD5E1';
-            ctx.font = '24px sans-serif';
-            ctx.fillText('This is proudly awarded to', 600, 320);
-
-            ctx.fillStyle = '#FBBF24';
-            ctx.font = 'bold 54px sans-serif';
-            ctx.fillText(student.fullName, 600, 410);
-
-            ctx.fillStyle = '#E2E8F0';
-            ctx.font = '24px sans-serif';
-            ctx.fillText('For successfully completing the cohort training in', 600, 490);
-
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 30px sans-serif';
-            ctx.fillText(student.programTitle || prog.title, 600, 555);
-
-            ctx.fillStyle = '#94A3B8';
-            ctx.font = '20px sans-serif';
-            ctx.fillText(`Certificate ID: ${student.id} • Issued ${new Date().toLocaleDateString()}`, 600, 710);
-
-            return canvas.toDataURL('image/png');
-        }
-
-        async function issueStudentCertificate(regId) {
-            const student = appState.registrations.find(r => r.id === regId);
-            if (!student) return;
-            const prog = appState.programs[0] || defaultState.programs[0];
-            student.certificateIssued = true;
-            student.certificateData = generateDefaultCertificateDataUrl(student, prog);
-            student.updatedAt = Date.now();
-            saveStateLocal();
-            await syncSingleNodeToFirebase(`lhci_registrations/${student.id}`, student);
-            renderAdminDashboard();
-            updateStudentAuthViews();
-            showToast(`Certificate issued for ${student.fullName}!`, 'success');
-        }
-
         function populateAdminSettingsForms() {
             const prog = appState.programs[0] || defaultState.programs[0];
             const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+            setVal('admin-prog-id', prog.id || 'program-1');
             setVal('admin-prog-title', prog.title);
-            setVal('admin-prog-fee', prog.fee);
+            setVal('admin-prog-early-fee', prog.earlyFee || '₦1,500');
+            setVal('admin-prog-late-fee', prog.lateFee || '₦2,000');
+            setVal('admin-prog-early-cutoff-iso', prog.earlyCutoffISO || '2026-12-05T23:59');
+            setVal('admin-prog-early-interval', prog.earlyInterval || 'Nov 24 – Dec 5, 2026');
+            setVal('admin-prog-late-interval', prog.lateInterval || 'Dec 6 – Dec 11, 2026');
+            setVal('admin-prog-start-iso', prog.startDateTimeISO || '2026-12-12T16:00');
+            setVal('admin-prog-deadline', prog.paymentDeadline || 'Friday, December 11, 2026 • 11:59 PM WAT');
             setVal('admin-prog-schedule', prog.schedule);
             setVal('admin-prog-whatsapp', prog.whatsappLink);
+            setVal('admin-prog-bank-name', prog.bankName || 'Zenith Bank / First Bank');
+            setVal('admin-prog-account-name', prog.accountName || 'LIGHT HOUSE CREATIVES INTERNATIONAL');
+            setVal('admin-prog-account-number', prog.accountNumber || '1234567890');
             setVal('admin-prog-desc', prog.description);
             setVal('admin-prog-payment-info', prog.paymentInstructions);
-            setVal('admin-prog-zoom-link', prog.zoomLink);
-            setVal('admin-prog-zoom-passcode', prog.zoomPasscode);
-            setVal('admin-prog-zoom-date', prog.zoomDate);
-            setVal('admin-prog-zoom-time', prog.zoomTime);
-            setVal('admin-prog-zoom-instructions', prog.zoomInstructions);
+            setVal('admin-prog-telegram-link', prog.telegramLink || 'https://t.me/+lighthousecreativesintl');
+            setVal('admin-prog-telegram-passcode', prog.telegramPasscode || 'LHCI2026');
+            setVal('admin-prog-telegram-date', prog.telegramDate || '');
+            setVal('admin-prog-telegram-time', prog.telegramTime || '');
+            setVal('admin-prog-telegram-instructions', prog.telegramInstructions || '');
+
+            pendingTrainingFlierUrl = prog.flierUrl || '';
+            const flierPrev = document.getElementById('admin-prog-flier-preview');
+            if (flierPrev) {
+                if (pendingTrainingFlierUrl) {
+                    flierPrev.src = pendingTrainingFlierUrl;
+                    flierPrev.classList.remove('hidden');
+                } else {
+                    flierPrev.src = '';
+                    flierPrev.classList.add('hidden');
+                }
+            }
+
+            renderAdminSavedTrainingsBar();
 
             const b = appState.branding;
             setVal('admin-org-name', b.orgName);
@@ -2651,12 +3075,11 @@ LIGHT HOUSE CREATIVES INTERNATIONAL`;
             setVal('admin-stat2-lbl', b.stat2Lbl);
             setVal('admin-stat3-val', b.stat3Val);
             setVal('admin-stat3-lbl', b.stat3Lbl);
-            setVal('admin-prog-sec-heading', b.programSectionHeading);
-
             setVal('admin-founder-name', b.founderName);
             setVal('admin-founder-role', b.founderRole);
             setVal('admin-founder-bio', b.founderBio);
             setVal('admin-founder-quote', b.founderQuote);
+            setVal('admin-prog-sec-heading', b.programSectionHeading);
 
             const a = appState.about;
             setVal('admin-about-headline', a.headline);
@@ -2669,30 +3092,126 @@ LIGHT HOUSE CREATIVES INTERNATIONAL`;
             setVal('admin-footer-desc', b.footerBrandDesc);
             setVal('admin-footer-highlight', b.footerBrandHighlight);
             setVal('admin-footer-tagline', b.footerTagline);
-
             setVal('admin-firebase-url-input', getActiveCloudDbUrl());
+        }
+
+        function renderAdminSavedTrainingsBar() {
+            const bar = document.getElementById('admin-saved-trainings-bar');
+            const list = document.getElementById('admin-saved-trainings-list');
+            if (!bar || !list) return;
+            const progs = appState.programs || [];
+            if (progs.length <= 1) {
+                bar.classList.add('hidden');
+                return;
+            }
+            bar.classList.remove('hidden');
+            list.innerHTML = progs.map((p, idx) => `
+                <button type="button" onclick="activateTrainingCohort('${p.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${idx === 0 ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-amber-400'}">
+                    ${idx === 0 ? '★ Active: ' : ''}${p.title}
+                </button>
+            `).join('');
+        }
+
+        function prepareNewTrainingForm() {
+            const newId = `program-${Date.now()}`;
+            const earlyCutoff = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            const nextMonth = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+            const toIsoLocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T23:59`;
+            const isoDefault = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-${String(nextMonth.getDate()).padStart(2, '0')}T16:00`;
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+
+            setVal('admin-prog-id', newId);
+            setVal('admin-prog-title', '');
+            setVal('admin-prog-early-fee', '₦1,500');
+            setVal('admin-prog-late-fee', '₦2,000');
+            setVal('admin-prog-early-cutoff-iso', toIsoLocal(earlyCutoff));
+            setVal('admin-prog-early-interval', '');
+            setVal('admin-prog-late-interval', '');
+            setVal('admin-prog-start-iso', isoDefault);
+            setVal('admin-prog-deadline', '');
+            setVal('admin-prog-schedule', '6 Weeks Intensive • Live on Telegram + WhatsApp Mentorship');
+            setVal('admin-prog-desc', '');
+            pendingTrainingFlierUrl = '';
+            const flierPrev = document.getElementById('admin-prog-flier-preview');
+            const flierInput = document.getElementById('admin-prog-flier-input');
+            if (flierPrev) { flierPrev.src = ''; flierPrev.classList.add('hidden'); }
+            if (flierInput) inpResetValue(flierInput);
+            showToast('Ready to create a new training cohort! Fill in the details, upload a flier, and click "Save & Publish Training Cohort".', 'info');
+        }
+
+        function inpResetValue(el) { if (el) el.value = ''; }
+
+        let pendingTrainingFlierUrl = '';
+
+        async function handleAdminTrainingFlierUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            pendingTrainingFlierUrl = await compressImageDataUrl(file, 900, 0.8);
+            const prev = document.getElementById('admin-prog-flier-preview');
+            if (prev && pendingTrainingFlierUrl) {
+                prev.src = pendingTrainingFlierUrl;
+                prev.classList.remove('hidden');
+            }
+            showToast('Training flier ready! Click "Save & Publish Training Cohort" to publish.', 'info');
+        }
+
+        function clearAdminTrainingFlier() {
+            pendingTrainingFlierUrl = '';
+            const prev = document.getElementById('admin-prog-flier-preview');
+            const inp = document.getElementById('admin-prog-flier-input');
+            if (prev) { prev.src = ''; prev.classList.add('hidden'); }
+            if (inp) inp.value = '';
+            showToast('Training flier cleared. Click "Save & Publish Training Cohort" to apply.', 'info');
+        }
+
+        async function activateTrainingCohort(progId) {
+            const idx = appState.programs.findIndex(p => p.id === progId);
+            if (idx <= 0) return;
+            const [selected] = appState.programs.splice(idx, 1);
+            appState.programs.unshift(selected);
+            saveStateLocal();
+            await syncConfigToFirebase();
+            populateAdminSettingsForms();
+            refreshAllViews();
+            showToast(`"${selected.title}" is now the active training cohort & countdown target!`, 'success');
         }
 
         async function saveFlagshipProgramSettings(e) {
             e.preventDefault();
-            const prog = appState.programs[0] || defaultState.programs[0];
-            prog.title = document.getElementById('admin-prog-title').value.trim();
-            prog.fee = document.getElementById('admin-prog-fee').value.trim();
-            prog.schedule = document.getElementById('admin-prog-schedule').value.trim();
-            prog.whatsappLink = document.getElementById('admin-prog-whatsapp').value.trim();
-            prog.description = document.getElementById('admin-prog-desc').value.trim();
-            prog.paymentInstructions = document.getElementById('admin-prog-payment-info').value.trim();
-            prog.zoomLink = document.getElementById('admin-prog-zoom-link').value.trim();
-            prog.zoomPasscode = document.getElementById('admin-prog-zoom-passcode').value.trim();
-            prog.zoomDate = document.getElementById('admin-prog-zoom-date').value.trim();
-            prog.zoomTime = document.getElementById('admin-prog-zoom-time').value.trim();
-            prog.zoomInstructions = document.getElementById('admin-prog-zoom-instructions').value.trim();
+            const targetId = document.getElementById('admin-prog-id').value.trim() || 'program-1';
+            const existing = appState.programs.find(p => p.id === targetId) || { ...defaultState.programs[0], id: targetId };
 
-            appState.programs = [prog];
+            existing.title = document.getElementById('admin-prog-title').value.trim();
+            existing.earlyFee = document.getElementById('admin-prog-early-fee').value.trim() || '₦1,500';
+            existing.lateFee = document.getElementById('admin-prog-late-fee').value.trim() || '₦2,000';
+            existing.earlyCutoffISO = document.getElementById('admin-prog-early-cutoff-iso').value.trim();
+            existing.earlyInterval = document.getElementById('admin-prog-early-interval').value.trim();
+            existing.lateInterval = document.getElementById('admin-prog-late-interval').value.trim();
+            existing.fee = getProgramPricingState(existing).activeFee;
+            existing.startDateTimeISO = document.getElementById('admin-prog-start-iso').value.trim();
+            existing.paymentDeadline = document.getElementById('admin-prog-deadline').value.trim();
+            existing.schedule = document.getElementById('admin-prog-schedule').value.trim();
+            existing.whatsappLink = document.getElementById('admin-prog-whatsapp').value.trim();
+            existing.bankName = document.getElementById('admin-prog-bank-name').value.trim();
+            existing.accountName = document.getElementById('admin-prog-account-name').value.trim();
+            existing.accountNumber = document.getElementById('admin-prog-account-number').value.trim();
+            existing.flierUrl = pendingTrainingFlierUrl;
+            existing.description = document.getElementById('admin-prog-desc').value.trim();
+            existing.paymentInstructions = document.getElementById('admin-prog-payment-info').value.trim();
+            existing.telegramLink = document.getElementById('admin-prog-telegram-link').value.trim();
+            existing.telegramPasscode = document.getElementById('admin-prog-telegram-passcode').value.trim();
+            existing.telegramDate = document.getElementById('admin-prog-telegram-date').value.trim();
+            existing.telegramTime = document.getElementById('admin-prog-telegram-time').value.trim();
+            existing.telegramInstructions = document.getElementById('admin-prog-telegram-instructions').value.trim();
+
+            const others = appState.programs.filter(p => p.id !== targetId);
+            appState.programs = [existing, ...others];
+
             saveStateLocal();
             await syncConfigToFirebase();
+            populateAdminSettingsForms();
             refreshAllViews();
-            showToast('Flagship program, WhatsApp link & Zoom details saved!', 'success');
+            showToast('Training cohort, flier, early/late pricing, countdown timer, bank account & Telegram details published!', 'success');
         }
 
         async function saveBrandingSettings(e) {
