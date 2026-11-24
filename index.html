@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIGHT HOUSE CREATIVES INTERNATIONAL | Global Creative & Leadership Training</title>
+    <link id="site-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23EF4444'/%3E%3Cstop offset='35%25' stop-color='%23F59E0B'/%3E%3Cstop offset='70%25' stop-color='%2322C55E'/%3E%3Cstop offset='100%25' stop-color='%233B82F6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230B0F19'/%3E%3Crect x='3' y='3' width='58' height='58' rx='14' fill='none' stroke='url(%23g)' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23F59E0B'/%3E%3Cg stroke='%23FBBF24' stroke-width='3.5' stroke-linecap='round'%3E%3Cline x1='32' y1='10' x2='32' y2='16'/%3E%3Cline x1='32' y1='48' x2='32' y2='54'/%3E%3Cline x1='10' y1='32' x2='16' y2='32'/%3E%3Cline x1='48' y1='32' x2='54' y2='32'/%3E%3Cline x1='16.5' y1='16.5' x2='20.8' y2='20.8'/%3E%3Cline x1='43.2' y1='43.2' x2='47.5' y2='47.5'/%3E%3Cline x1='47.5' y1='16.5' x2='43.2' y2='20.8'/%3E%3Cline x1='20.8' y1='43.2' x2='16.5' y2='47.5'/%3E%3C/g%3E%3C/svg%3E">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -559,19 +560,57 @@
                         <h2 class="font-display text-xl font-extrabold text-slate-900">Student Portal Sign In</h2>
                         <p class="text-xs text-slate-500 mt-1">Sign in with your registered email and password. Your session stays active even if you refresh.</p>
                     </div>
-                    <form onsubmit="handleStudentLogin(event)" class="space-y-4">
+                    <form id="student-signin-form" onsubmit="handleStudentLogin(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Registered Email *</label>
                             <input type="email" id="student-login-email" required placeholder="you@example.com" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Portal Password *</label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Portal Password *</label>
+                                <button type="button" onclick="toggleForgotPasswordBox(true)" class="text-xs font-bold text-amber-600 hover:text-amber-700">Forgot Password?</button>
+                            </div>
                             <input type="password" id="student-login-password" required placeholder="Enter your password" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md">
                             Sign In to My Dashboard
                         </button>
                     </form>
+
+                    <!-- Forgot Password & Email Reset Code Box -->
+                    <div id="student-forgot-password-box" class="hidden space-y-4 pt-2">
+                        <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                            <strong>Password Recovery:</strong> Enter your registered email to receive a 6-digit verification code and direct password reset link.
+                        </div>
+                        <form onsubmit="sendStudentPasswordResetCode(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Registered Email *</label>
+                                <input type="email" id="forgot-reset-email" required placeholder="you@example.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <button type="submit" id="send-reset-code-btn" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">
+                                Send Verification Code & Reset Link to Email
+                            </button>
+                        </form>
+
+                        <form id="verify-reset-code-form" onsubmit="completeStudentPasswordReset(event)" class="hidden space-y-3 pt-3 border-t border-slate-200">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">6-Digit Code from Email *</label>
+                                <input type="text" id="forgot-reset-code" required maxlength="6" placeholder="e.g., 482910" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-mono tracking-widest outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Create New Password *</label>
+                                <input type="password" id="forgot-new-password" required minlength="4" placeholder="Enter your new password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <button type="submit" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">
+                                Reset Password & Sign In
+                            </button>
+                        </form>
+
+                        <button type="button" onclick="toggleForgotPasswordBox(false)" class="w-full text-center text-xs font-semibold text-slate-500 hover:text-slate-800 pt-1">
+                            ← Back to Student Sign In
+                        </button>
+                    </div>
+
                     <div class="mt-6 pt-5 border-t border-slate-100 text-center">
                         <p class="text-xs text-slate-500">Not enrolled yet?</p>
                         <button onclick="navigateTo('register')" class="mt-1.5 text-sm font-bold text-amber-600 hover:text-amber-700">
@@ -689,18 +728,24 @@
                             <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
                                 <i data-lucide="award" class="w-7 h-7"></i>
                             </div>
-                            <h3 class="font-display font-bold text-lg text-slate-900">Certificate Not Yet Issued</h3>
-                            <p class="text-sm text-slate-500 max-w-md mx-auto">Once you complete your training and the Administrator issues your certificate, you will be able to preview and download it right here.</p>
+                            <h3 class="font-display font-bold text-lg text-slate-900">Certificate Not Yet Uploaded</h3>
+                            <p class="text-sm text-slate-500 max-w-md mx-auto">Once you complete your training and the Administrator uploads your official certificate, you will be able to preview and download it right here.</p>
                         </div>
                         <div id="student-cert-ready" class="hidden space-y-5 text-center">
-                            <div class="p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white border-2 border-amber-400 max-w-2xl mx-auto shadow-xl">
-                                <span class="text-xs font-bold uppercase tracking-widest text-amber-400">Certificate of Completion</span>
-                                <h3 class="font-display text-2xl sm:text-3xl font-extrabold mt-2" id="cert-preview-student-name">Student Name</h3>
-                                <p class="text-slate-300 text-sm mt-2">Has successfully completed the intensive cohort training in</p>
-                                <p class="font-display text-lg font-bold text-amber-300 mt-1" id="cert-preview-course-name">Flagship Program</p>
-                                <p class="text-xs text-slate-400 mt-4">Issued by LIGHT HOUSE CREATIVES INTERNATIONAL • ID: <span id="cert-preview-id">LHCI-000</span></p>
+                            <div class="p-6 rounded-2xl bg-slate-900 text-white border-2 border-amber-400 max-w-2xl mx-auto shadow-xl space-y-4">
+                                <span class="text-xs font-bold uppercase tracking-widest text-amber-400">Official Certificate Uploaded by Admin</span>
+                                <h3 class="font-display text-xl sm:text-2xl font-extrabold" id="cert-preview-student-name">Student Name</h3>
+                                <p class="text-xs text-slate-300" id="cert-preview-course-name">Flagship Program</p>
+                                <div id="student-cert-visual-wrap" class="rounded-xl overflow-hidden border border-slate-700 bg-slate-950 p-3">
+                                    <img id="student-cert-preview-img" src="" alt="Uploaded Certificate" class="hidden max-h-96 mx-auto rounded-lg object-contain">
+                                    <div id="student-cert-pdf-badge" class="hidden py-8 text-amber-300 font-bold text-sm flex flex-col items-center gap-2">
+                                        <i data-lucide="file-text" class="w-10 h-10"></i>
+                                        <span id="student-cert-filename-label">Official_Certificate.pdf</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-400">Issued by LIGHT HOUSE CREATIVES INTERNATIONAL • ID: <span id="cert-preview-id">LHCI-000</span></p>
                             </div>
-                            <a id="student-cert-download-link" href="#" download="LHCI_Certificate.png" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-md">
+                            <a id="student-cert-download-link" href="#" download="LHCI_Certificate" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-md">
                                 <i data-lucide="download" class="w-4 h-4"></i>
                                 <span>Download Official Certificate</span>
                             </a>
@@ -860,8 +905,8 @@
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider">
-                                <th class="py-3 px-3">Student</th>
-                                <th class="py-3 px-3">Portal Activity</th>
+                                <th class="py-3 px-3">Student & Password</th>
+                                <th class="py-3 px-3">Portal Activity & Access</th>
                                 <th class="py-3 px-3">Payment & Receipt</th>
                                 <th class="py-3 px-3">Zoom & Certificate</th>
                                 <th class="py-3 px-3 text-right">Actions</th>
@@ -1255,7 +1300,7 @@
         const STUDENT_SESSION_KEY = 'lhci_active_student_email_v1';
         const THEME_MODE_KEY = 'lhci_theme_mode_v1';
         const MAX_SUPPORTED_USERS = 5000;
-
+        const DEFAULT_FAVICON_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23EF4444'/%3E%3Cstop offset='35%25' stop-color='%23F59E0B'/%3E%3Cstop offset='70%25' stop-color='%2322C55E'/%3E%3Cstop offset='100%25' stop-color='%233B82F6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230B0F19'/%3E%3Crect x='3' y='3' width='58' height='58' rx='14' fill='none' stroke='url(%23g)' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23F59E0B'/%3E%3Cg stroke='%23FBBF24' stroke-width='3.5' stroke-linecap='round'%3E%3Cline x1='32' y1='10' x2='32' y2='16'/%3E%3Cline x1='32' y1='48' x2='32' y2='54'/%3E%3Cline x1='10' y1='32' x2='16' y2='32'/%3E%3Cline x1='48' y1='32' x2='54' y2='32'/%3E%3Cline x1='16.5' y1='16.5' x2='20.8' y2='20.8'/%3E%3Cline x1='43.2' y1='43.2' x2='47.5' y2='47.5'/%3E%3Cline x1='47.5' y1='16.5' x2='43.2' y2='20.8'/%3E%3Cline x1='20.8' y1='43.2' x2='16.5' y2='47.5'/%3E%3C/g%3E%3C/svg%3E";
         let isAdminLoggedIn = localStorage.getItem(ADMIN_SESSION_KEY) === 'true';
         let activeStudentEmail = localStorage.getItem(STUDENT_SESSION_KEY) || '';
         let currentTestimonySlide = 0;
@@ -1609,14 +1654,17 @@
 
             const logoImg = document.getElementById('header-logo-img');
             const logoIcon = document.getElementById('header-logo-fallback');
+            const faviconEl = document.getElementById('site-favicon');
             if (logoImg && logoIcon) {
                 if (b.logoUrl) {
                     logoImg.src = b.logoUrl;
                     logoImg.classList.remove('hidden');
                     logoIcon.classList.add('hidden');
+                    if (faviconEl) faviconEl.href = b.logoUrl;
                 } else {
                     logoImg.classList.add('hidden');
                     logoIcon.classList.remove('hidden');
+                    if (faviconEl) faviconEl.href = DEFAULT_FAVICON_SVG;
                 }
             }
 
@@ -1747,8 +1795,12 @@
                     receiptFileName: receiptFile ? receiptFile.name : 'Receipt Attached',
                     avatar: avatarData,
                     paymentApproved: existingIdx >= 0 ? appState.registrations[existingIdx].paymentApproved : false,
+                    isRestricted: existingIdx >= 0 ? Boolean(appState.registrations[existingIdx].isRestricted) : false,
                     certificateIssued: existingIdx >= 0 ? appState.registrations[existingIdx].certificateIssued : false,
                     certificateData: existingIdx >= 0 ? appState.registrations[existingIdx].certificateData : '',
+                    certificateFileName: existingIdx >= 0 ? appState.registrations[existingIdx].certificateFileName : '',
+                    resetCode: '',
+                    resetExpiresAt: 0,
                     lastLoginAt: now,
                     loginCount: 1,
                     isOnline: true,
@@ -1812,8 +1864,12 @@
                 showToast('No registration found for this email. Please register first.', 'error');
                 return;
             }
+            if (student.isRestricted) {
+                showToast('Your account access has been restricted by the Administrator. Please contact support.', 'error');
+                return;
+            }
             if (student.password && student.password !== password) {
-                showToast('Incorrect password. Please try again.', 'error');
+                showToast('Incorrect password. Click "Forgot Password?" to reset it.', 'error');
                 return;
             }
 
@@ -1857,7 +1913,17 @@
                 ? appState.registrations.find(r => r.email === activeStudentEmail)
                 : null;
 
-            if (!student) {
+            if (student && student.isRestricted) {
+                activeStudentEmail = '';
+                localStorage.removeItem(STUDENT_SESSION_KEY);
+                showToast('Your account access has been restricted by the Administrator.', 'error');
+            }
+
+            const validStudent = activeStudentEmail
+                ? appState.registrations.find(r => r.email === activeStudentEmail && !r.isRestricted)
+                : null;
+
+            if (!validStudent) {
                 if (loginBox) loginBox.classList.remove('hidden');
                 if (dashBox) dashBox.classList.add('hidden');
                 if (navDot) navDot.classList.add('hidden');
@@ -1868,13 +1934,13 @@
             if (loginBox) loginBox.classList.add('hidden');
             if (dashBox) dashBox.classList.remove('hidden');
             if (navDot) navDot.classList.remove('hidden');
-            if (headerBtnText) headerBtnText.textContent = student.fullName.split(' ')[0];
+            if (headerBtnText) headerBtnText.textContent = validStudent.fullName.split(' ')[0];
 
             const prog = appState.programs[0] || defaultState.programs[0];
-            document.getElementById('student-dash-avatar').src = student.avatar || 'https://placehold.co/150x150/1E293B/F59E0B?text=Student';
-            document.getElementById('student-dash-name').textContent = student.fullName;
-            document.getElementById('student-dash-course').textContent = student.programTitle || prog.title;
-            document.getElementById('student-dash-email').textContent = student.email;
+            document.getElementById('student-dash-avatar').src = validStudent.avatar || 'https://placehold.co/150x150/1E293B/F59E0B?text=Student';
+            document.getElementById('student-dash-name').textContent = validStudent.fullName;
+            document.getElementById('student-dash-course').textContent = validStudent.programTitle || prog.title;
+            document.getElementById('student-dash-email').textContent = validStudent.email;
 
             const waUrl = prog.whatsappLink || 'https://chat.whatsapp.com';
             const dashWa = document.getElementById('student-dash-whatsapp-btn');
@@ -1886,7 +1952,7 @@
             const zoomLocked = document.getElementById('student-zoom-locked');
             const zoomUnlocked = document.getElementById('student-zoom-unlocked');
 
-            if (student.paymentApproved) {
+            if (validStudent.paymentApproved) {
                 statusBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300';
                 statusBadge.textContent = 'Payment Approved • Zoom Unlocked';
                 zoomLocked.classList.add('hidden');
@@ -1903,19 +1969,34 @@
                 statusBadge.textContent = 'Pending Payment Approval';
                 zoomLocked.classList.remove('hidden');
                 zoomUnlocked.classList.add('hidden');
-                document.getElementById('student-receipt-ref-label').textContent = student.paymentRef || 'Submitted';
+                document.getElementById('student-receipt-ref-label').textContent = validStudent.paymentRef || 'Submitted';
             }
 
             const certPending = document.getElementById('student-cert-pending');
             const certReady = document.getElementById('student-cert-ready');
-            if (student.certificateIssued) {
+            if (validStudent.certificateIssued && validStudent.certificateData) {
                 certPending.classList.add('hidden');
                 certReady.classList.remove('hidden');
-                document.getElementById('cert-preview-student-name').textContent = student.fullName;
-                document.getElementById('cert-preview-course-name').textContent = student.programTitle || prog.title;
-                document.getElementById('cert-preview-id').textContent = student.id;
+                document.getElementById('cert-preview-student-name').textContent = validStudent.fullName;
+                document.getElementById('cert-preview-course-name').textContent = validStudent.programTitle || prog.title;
+                document.getElementById('cert-preview-id').textContent = validStudent.id;
+
+                const certImg = document.getElementById('student-cert-preview-img');
+                const certPdfBadge = document.getElementById('student-cert-pdf-badge');
+                const certFileLbl = document.getElementById('student-cert-filename-label');
+                const isImg = validStudent.certificateData.startsWith('data:image');
+                if (certImg && certPdfBadge) {
+                    certImg.classList.toggle('hidden', !isImg);
+                    certPdfBadge.classList.toggle('hidden', isImg);
+                    if (isImg) certImg.src = validStudent.certificateData;
+                    if (certFileLbl) certFileLbl.textContent = validStudent.certificateFileName || 'Official_Certificate.pdf';
+                }
+
                 const dl = document.getElementById('student-cert-download-link');
-                if (dl) dl.href = student.certificateData || generateDefaultCertificateDataUrl(student, prog);
+                if (dl) {
+                    dl.href = validStudent.certificateData;
+                    dl.download = validStudent.certificateFileName || `${validStudent.fullName.replace(/\s+/g, '_')}_Certificate`;
+                }
             } else {
                 certPending.classList.remove('hidden');
                 certReady.classList.add('hidden');
@@ -1956,8 +2037,129 @@
             student.updatedAt = Date.now();
             saveStateLocal();
             await syncSingleNodeToFirebase(`lhci_registrations/${student.id}`, student);
+            if (isAdminLoggedIn) renderAdminDashboard();
             e.target.reset();
-            showToast('Student portal password updated!', 'success');
+            showToast('Student portal password updated & synced to Admin profile!', 'success');
+        }
+
+        /* Forgot Password Flow: Email Verification Code + Direct Link */
+        function toggleForgotPasswordBox(show) {
+            const signInForm = document.getElementById('student-signin-form');
+            const forgotBox = document.getElementById('student-forgot-password-box');
+            if (signInForm) signInForm.classList.toggle('hidden', show);
+            if (forgotBox) forgotBox.classList.toggle('hidden', !show);
+            if (show) {
+                const prefill = document.getElementById('student-login-email')?.value.trim();
+                if (prefill && document.getElementById('forgot-reset-email')) {
+                    document.getElementById('forgot-reset-email').value = prefill;
+                }
+            }
+        }
+
+        async function sendStudentPasswordResetCode(e) {
+            e.preventDefault();
+            const btn = document.getElementById('send-reset-code-btn');
+            const email = document.getElementById('forgot-reset-email').value.trim().toLowerCase();
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Sending Reset Code & Link...';
+            }
+
+            await pullStateFromCloud(true);
+            const student = appState.registrations.find(r => r.email === email);
+            if (!student) {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Send Verification Code & Reset Link to Email';
+                }
+                showToast('No account found with that email address.', 'error');
+                return;
+            }
+            if (student.isRestricted) {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Send Verification Code & Reset Link to Email';
+                }
+                showToast('This account has been restricted by the Administrator.', 'error');
+                return;
+            }
+
+            const code = String(Math.floor(100000 + Math.random() * 900000));
+            student.resetCode = code;
+            student.resetExpiresAt = Date.now() + 30 * 60 * 1000;
+            student.updatedAt = Date.now();
+            saveStateLocal();
+            await syncSingleNodeToFirebase(`lhci_registrations/${student.id}`, student);
+
+            const baseUrl = window.location.href.split('?')[0].split('#')[0];
+            const resetLink = `${baseUrl}?resetEmail=${encodeURIComponent(email)}&resetCode=${code}#student-portal`;
+
+            try {
+                await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(email)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        _subject: 'Password Reset Code & Link — LIGHT HOUSE CREATIVES INTERNATIONAL',
+                        student_name: student.fullName,
+                        verification_code: code,
+                        direct_reset_link: resetLink,
+                        message: `Hello ${student.fullName},\n\nYour 6-digit password reset verification code is: ${code}\n\nClick the link below to open the password reset form directly:\n${resetLink}\n\nThis code expires in 30 minutes.`
+                    })
+                });
+            } catch (err) {}
+
+            document.getElementById('verify-reset-code-form').classList.remove('hidden');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Re-send Verification Code & Reset Link';
+            }
+            showToast(`Verification code & reset link sent to ${email}! Check your inbox.`, 'success');
+        }
+
+        async function completeStudentPasswordReset(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgot-reset-email').value.trim().toLowerCase();
+            const enteredCode = document.getElementById('forgot-reset-code').value.trim();
+            const newPass = document.getElementById('forgot-new-password').value;
+
+            await pullStateFromCloud(true);
+            const student = appState.registrations.find(r => r.email === email);
+            if (!student) {
+                showToast('Student account not found.', 'error');
+                return;
+            }
+            if (!student.resetCode || student.resetCode !== enteredCode) {
+                showToast('Invalid verification code. Please check your email and try again.', 'error');
+                return;
+            }
+            if (student.resetExpiresAt && Date.now() > student.resetExpiresAt) {
+                showToast('This reset code has expired. Please request a new code.', 'error');
+                return;
+            }
+
+            student.password = newPass;
+            student.resetCode = '';
+            student.resetExpiresAt = 0;
+            student.lastLoginAt = Date.now();
+            student.isOnline = true;
+            student.updatedAt = Date.now();
+
+            activeStudentEmail = email;
+            localStorage.setItem(STUDENT_SESSION_KEY, email);
+
+            saveStateLocal();
+            await syncSingleNodeToFirebase(`lhci_registrations/${student.id}`, student);
+
+            /* Clean query parameters from browser URL */
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname + '#student-portal');
+            }
+
+            toggleForgotPasswordBox(false);
+            updateStudentAuthViews();
+            if (isAdminLoggedIn) renderAdminDashboard();
+            showToast('Password changed successfully! Your new password is active.', 'success');
         }
 
         async function handleStudentTestimonySubmit(e) {
@@ -2149,21 +2351,21 @@
                     ? new Date(r.lastLoginAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : 'Registered';
                 return `
-                    <tr class="hover:bg-slate-800/40">
+                    <tr class="hover:bg-slate-800/40 ${r.isRestricted ? 'opacity-75 bg-red-950/15' : ''}">
                         <td class="py-3.5 px-3">
                             <div class="flex items-center gap-3">
                                 <img src="${r.avatar || 'https://placehold.co/100x100/1E293B/F59E0B?text=ST'}" class="w-9 h-9 rounded-xl object-cover border border-slate-700 shrink-0">
                                 <div>
                                     <p class="font-bold text-white">${r.fullName}</p>
                                     <p class="text-[11px] text-slate-400">${r.email} • ${r.phone}</p>
-                                    <p class="text-[10px] text-slate-500">${r.location || ''}</p>
+                                    <p class="text-[10px] text-amber-300 font-mono mt-0.5">Password: <span class="px-1.5 py-0.5 rounded bg-slate-800 text-white select-all">${r.password || 'Not set'}</span></p>
                                 </div>
                             </div>
                         </td>
                         <td class="py-3.5 px-3">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${r.isOnline ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-300'}">
-                                <span class="w-1.5 h-1.5 rounded-full ${r.isOnline ? 'bg-emerald-400' : 'bg-slate-400'}"></span>
-                                ${r.isOnline ? 'Logged In' : 'Active Account'}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${r.isRestricted ? 'bg-red-500/20 text-red-300' : (r.isOnline ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-300')}">
+                                <span class="w-1.5 h-1.5 rounded-full ${r.isRestricted ? 'bg-red-400' : (r.isOnline ? 'bg-emerald-400' : 'bg-slate-400')}"></span>
+                                ${r.isRestricted ? 'Restricted' : (r.isOnline ? 'Logged In' : 'Active Account')}
                             </span>
                             <p class="text-[10px] text-slate-400 mt-1">Last seen: ${lastLoginStr}</p>
                         </td>
@@ -2177,14 +2379,17 @@
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.paymentApproved ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}">
                                 ${r.paymentApproved ? 'Zoom Unlocked' : 'Awaiting Approval'}
                             </span>
-                            <p class="text-[10px] text-slate-400 mt-1">Cert: ${r.certificateIssued ? 'Issued' : 'Pending'}</p>
+                            <p class="text-[10px] text-slate-400 mt-1">Cert: ${r.certificateIssued ? (r.certificateFileName || 'Uploaded') : 'Pending'}</p>
                         </td>
                         <td class="py-3.5 px-3 text-right space-x-1.5 whitespace-nowrap">
                             <button onclick="approveStudentPaymentAndEmail('${r.id}')" class="px-3 py-1.5 rounded-lg ${r.paymentApproved ? 'bg-emerald-700 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'} font-bold text-[11px]">
                                 ${r.paymentApproved ? 'Re-send Zoom Email' : 'Approve Payment & Send Zoom'}
                             </button>
-                            <button onclick="issueStudentCertificate('${r.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px]">
-                                ${r.certificateIssued ? 'Cert Issued' : 'Issue Cert'}
+                            <button onclick="openUploadCertificateModal('${r.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px]">
+                                ${r.certificateIssued ? 'Replace Cert' : 'Upload Cert'}
+                            </button>
+                            <button onclick="toggleStudentRestriction('${r.id}')" class="px-2.5 py-1.5 rounded-lg ${r.isRestricted ? 'bg-blue-600 text-white' : 'bg-red-500/20 hover:bg-red-500/30 text-red-300'} font-bold text-[11px]">
+                                ${r.isRestricted ? 'Restore Access' : 'Restrict User'}
                             </button>
                         </td>
                     </tr>
@@ -2223,11 +2428,9 @@
 
             renderAdminDashboard();
             updateStudentAuthViews();
-            showToast(`Payment approved for ${student.fullName}! Zoom access unlocked.`, 'success');
 
-            const subject = encodeURIComponent(`Payment Approved & Zoom Class Details — ${prog.title}`);
-            const body = encodeURIComponent(
-`Dear ${student.fullName},
+            const subjectText = `Payment Approved & Zoom Class Details — ${prog.title}`;
+            const emailMessage = `Dear ${student.fullName},
 
 Congratulations! Your payment for ${prog.title} at LIGHT HOUSE CREATIVES INTERNATIONAL has been approved.
 
@@ -2240,12 +2443,124 @@ Here are your official Live Zoom Class details:
 
 Official WhatsApp Cohort Group: ${prog.whatsappLink}
 
-You can also view these credentials anytime inside your Student Portal.
+Welcome aboard!
+LIGHT HOUSE CREATIVES INTERNATIONAL`;
 
-Warm regards,
-LIGHT HOUSE CREATIVES INTERNATIONAL`
+            try {
+                await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(student.email)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        _subject: subjectText,
+                        student_name: student.fullName,
+                        zoom_link: prog.zoomLink,
+                        zoom_passcode: prog.zoomPasscode,
+                        class_date: prog.zoomDate,
+                        class_time: prog.zoomTime,
+                        instructions: prog.zoomInstructions,
+                        message: emailMessage
+                    })
+                });
+            } catch (err) {}
+
+            const safeMsgAttr = emailMessage.replace(/"/g, '&quot;');
+            const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(student.email)}&su=${encodeURIComponent(subjectText)}&body=${encodeURIComponent(emailMessage)}`;
+
+            document.getElementById('inspect-modal-title').textContent = `Payment Approved & Zoom Email Dispatched`;
+            document.getElementById('inspect-modal-body').innerHTML = `
+                <div class="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                    <strong>Zoom Access Unlocked!</strong> Details have been dispatched to <strong>${student.email}</strong> and unlocked inside their Student Portal.
+                </div>
+                <textarea id="zoom-dispatch-preview" rows="8" readonly class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-200 font-mono">${emailMessage}</textarea>
+                <div class="flex flex-wrap justify-end gap-2 pt-1">
+                    <button type="button" data-copy-text="${safeMsgAttr}" onclick="navigator.clipboard.writeText(this.getAttribute('data-copy-text')); showToast('Zoom details copied for WhatsApp/SMS!', 'success');" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">
+                        Copy Message (WhatsApp/SMS)
+                    </button>
+                    <a href="${gmailComposeUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs">
+                        Open in Gmail Web
+                    </a>
+                </div>
+            `;
+            document.getElementById('admin-inspect-modal').classList.remove('hidden');
+            showToast(`Payment approved & Zoom email sent to ${student.fullName}!`, 'success');
+        }
+
+        async function toggleStudentRestriction(regId) {
+            const student = appState.registrations.find(r => r.id === regId);
+            if (!student) return;
+            student.isRestricted = !student.isRestricted;
+            if (student.isRestricted) student.isOnline = false;
+            student.updatedAt = Date.now();
+            saveStateLocal();
+            await syncSingleNodeToFirebase(`lhci_registrations/${student.id}`, student);
+            renderAdminDashboard();
+            updateStudentAuthViews();
+            showToast(
+                student.isRestricted
+                    ? `Access restricted for ${student.fullName}. They can no longer sign in.`
+                    : `Portal access restored for ${student.fullName}.`,
+                student.isRestricted ? 'error' : 'success'
             );
-            window.open(`mailto:${student.email}?subject=${subject}&body=${body}`, '_blank');
+        }
+
+        function openUploadCertificateModal(regId) {
+            const student = appState.registrations.find(r => r.id === regId);
+            if (!student) return;
+            document.getElementById('inspect-modal-title').textContent = `Upload Certificate — ${student.fullName}`;
+            document.getElementById('inspect-modal-body').innerHTML = `
+                <p class="text-slate-300">Select the prepared certificate file (<strong>Image PNG/JPG or PDF</strong>) to assign directly to <strong>${student.fullName}</strong> (${student.email}):</p>
+                <form onsubmit="handleAdminCertificateUpload(event, '${student.id}')" class="space-y-4 pt-2">
+                    <input type="file" id="admin-cert-upload-input" accept="image/*,.pdf" required class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-200 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950">
+                    ${student.certificateIssued && student.certificateData ? `<p class="text-[11px] text-emerald-400">Currently assigned: ${student.certificateFileName || 'Certificate File'}</p>` : ''}
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="document.getElementById('admin-inspect-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel</button>
+                        <button type="submit" id="admin-cert-upload-submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">
+                            Upload & Assign Certificate
+                        </button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('admin-inspect-modal').classList.remove('hidden');
+        }
+
+        async function handleAdminCertificateUpload(e, regId) {
+            e.preventDefault();
+            const student = appState.registrations.find(r => r.id === regId);
+            const fileInput = document.getElementById('admin-cert-upload-input');
+            const file = fileInput && fileInput.files[0];
+            if (!student || !file) return;
+
+            const btn = document.getElementById('admin-cert-upload-submit');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Uploading...';
+            }
+
+            try {
+                const certData = file.type.startsWith('image/')
+                    ? await compressImageDataUrl(file, 1200, 0.85)
+                    : await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result || '');
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+
+                student.certificateIssued = true;
+                student.certificateData = certData;
+                student.certificateFileName = file.name;
+                student.updatedAt = Date.now();
+
+                saveStateLocal();
+                await syncSingleNodeToFirebase(`lhci_registrations/${student.id}`, student);
+
+                document.getElementById('admin-inspect-modal').classList.add('hidden');
+                renderAdminDashboard();
+                updateStudentAuthViews();
+                showToast(`Certificate (${file.name}) uploaded for ${student.fullName}!`, 'success');
+            } catch (err) {
+                showToast('Error uploading certificate file. Please try a smaller file.', 'error');
+            }
         }
 
         function generateDefaultCertificateDataUrl(student, prog) {
@@ -2543,6 +2858,19 @@ LIGHT HOUSE CREATIVES INTERNATIONAL`
 
             if (isAdminLoggedIn) {
                 enterAdminView();
+            }
+
+            /* Check if user arrived via Password Reset Email Link (?resetEmail=...&resetCode=...) */
+            const params = new URLSearchParams(window.location.search);
+            const resetEmailParam = params.get('resetEmail');
+            const resetCodeParam = params.get('resetCode');
+            if (resetEmailParam && resetCodeParam) {
+                navigateTo('student-portal');
+                toggleForgotPasswordBox(true);
+                document.getElementById('forgot-reset-email').value = resetEmailParam;
+                document.getElementById('forgot-reset-code').value = resetCodeParam;
+                document.getElementById('verify-reset-code-form').classList.remove('hidden');
+                showToast('Enter your new password below to complete your reset.', 'info');
             }
 
             /* Initial Firebase Pull + Jittered 25s Interval for 5,000+ Concurrent Users */
