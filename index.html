@@ -407,7 +407,7 @@
                             </div>
                             <div class="lg:col-span-7 p-6 sm:p-10 lg:p-12 space-y-5">
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-xs font-bold uppercase tracking-wider">
-                                    Direct Mentorship & Vision
+                                    FOUNDER
                                 </span>
                                 <div>
                                     <h2 id="founder-name-display" class="font-display text-2xl sm:text-4xl font-extrabold text-slate-900">Founder & Lead Visionary</h2>
@@ -737,9 +737,10 @@
                     <!-- Student Dashboard Sub-Tabs -->
                     <div class="flex flex-wrap gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
                         <button onclick="switchStudentTab('telegram')" id="stab-telegram" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition-all">1. Telegram Class & Payment</button>
-                        <button onclick="switchStudentTab('certificate')" id="stab-certificate" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">2. My Certificate</button>
-                        <button onclick="switchStudentTab('testimony')" id="stab-testimony" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">3. Post My Testimony</button>
-                        <button onclick="switchStudentTab('profile')" id="stab-profile" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">4. Profile & Password</button>
+                        <button onclick="switchStudentTab('videos')" id="stab-videos" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">2. Training Videos</button>
+                        <button onclick="switchStudentTab('certificate')" id="stab-certificate" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">3. My Certificate</button>
+                        <button onclick="switchStudentTab('testimony')" id="stab-testimony" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">4. Post My Testimony</button>
+                        <button onclick="switchStudentTab('profile')" id="stab-profile" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">5. Profile & Password</button>
                     </div>
 
                     <!-- Student Tab 1: Telegram Live Class & Payment Approval Status -->
@@ -802,20 +803,31 @@
                         </div>
                     </div>
 
-                    <!-- Student Tab 2: Digital Certificate -->
-                    <div id="spanel-certificate" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs">
-                        <div id="student-cert-pending" class="text-center py-8 space-y-3">
-                            <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                                <i data-lucide="award" class="w-7 h-7"></i>
+                    <!-- Student Tab 2: Training Videos (Auto-Delivered to All Registered Students, Access Controlled by Admin) -->
+                    <div id="spanel-videos" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="font-display font-bold text-xl text-slate-900">Cohort Training Files & Media (Doc, PDF, MP3, MP4)</h3>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Materials uploaded for your registered training are delivered to your cohort hub. Download links unlock once approved by the Administrator.</p>
                             </div>
-                            <h3 class="font-display font-bold text-lg text-slate-900">Certificate Not Yet Uploaded</h3>
-                            <p class="text-sm text-slate-500 max-w-md mx-auto">Once you complete your training and the Administrator uploads your official certificate, you will be able to preview and download it right here.</p>
                         </div>
-                        <div id="student-cert-ready" class="hidden space-y-5 text-center">
-                            <div class="p-6 rounded-2xl bg-slate-900 text-white border-2 border-amber-400 max-w-2xl mx-auto shadow-xl space-y-4">
-                                <span class="text-xs font-bold uppercase tracking-widest text-amber-400">Official Certificate Uploaded by Admin</span>
-                                <h3 class="font-display text-xl sm:text-2xl font-extrabold" id="cert-preview-student-name">Student Name</h3>
-                                <p class="text-xs text-slate-300" id="cert-preview-course-name">Flagship Program</p>
+                        <div id="student-videos-list" class="grid sm:grid-cols-2 gap-4">
+                            <!-- Rendered via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Student Tab 3: Digital Certificate -->
+                    <div id="spanel-certificate" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-5">
+                        <div id="student-cert-pending" class="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                            <i data-lucide="award" class="w-10 h-10 text-slate-400 mx-auto"></i>
+                            <h3 class="font-display font-bold text-lg text-slate-800">Certificate Not Yet Uploaded</h3>
+                            <p class="text-sm text-slate-500 max-w-md mx-auto">Once you complete the training and the Administrator uploads your official certificate, you can preview and download it here.</p>
+                        </div>
+                        <div id="student-cert-ready" class="hidden space-y-5">
+                            <div class="p-6 rounded-2xl bg-slate-900 text-white border border-amber-500/30 space-y-4 text-center">
+                                <span class="text-xs font-bold uppercase tracking-widest text-amber-400">Official Certificate of Completion</span>
+                                <h3 id="cert-preview-student-name" class="font-display text-2xl font-extrabold text-white">Student Name</h3>
+                                <p id="cert-preview-course-name" class="text-sm text-amber-300 font-semibold">Flagship Training Program</p>
                                 <div id="student-cert-visual-wrap" class="rounded-xl overflow-hidden border border-slate-700 bg-slate-950 p-3">
                                     <img id="student-cert-preview-img" src="" alt="Uploaded Certificate" class="hidden max-h-96 mx-auto rounded-lg object-contain">
                                     <div id="student-cert-pdf-badge" class="hidden py-8 text-amber-300 font-bold text-sm flex flex-col items-center gap-2">
@@ -832,18 +844,18 @@
                         </div>
                     </div>
 
-                    <!-- Student Tab 3: Post Testimony -->
-                    <div id="spanel-testimony" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs max-w-2xl">
+                    <!-- Student Tab 4: Post Testimony -->
+                    <div id="spanel-testimony" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs max-w-2xl space-y-5">
                         <h3 class="font-display font-bold text-xl text-slate-900">Share Your Training Testimony</h3>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-1">Your story will be featured on the LIGHT HOUSE CREATIVES INTERNATIONAL home page slider to inspire future cohorts.</p>
-                        <form onsubmit="handleStudentTestimonySubmit(event)" class="mt-5 space-y-4">
+                        <p class="text-xs sm:text-sm text-slate-500">Your published testimony appears on the Home Page testimonies slider with your profile photo.</p>
+                        <form onsubmit="handleStudentTestimonySubmit(event)" class="space-y-4">
                             <div>
-                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Your Role / Profession *</label>
-                                <input type="text" id="testimony-role-input" required placeholder="e.g., Creative Director, Media Lead, Entrepreneur" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Your Title / Role *</label>
+                                <input type="text" id="testimony-role-input" required placeholder="e.g., Creative Director, Lagos" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Your Testimony *</label>
-                                <textarea id="testimony-text-input" rows="4" required placeholder="Share how this training impacted your creativity, leadership, and career..." class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Your Testimony / Impact Story *</label>
+                                <textarea id="testimony-text-input" rows="4" required placeholder="Share how this training impacted your growth, skills, or leadership..." class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500"></textarea>
                             </div>
                             <button type="submit" class="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm">
                                 Publish Testimony to Home Page
@@ -851,18 +863,7 @@
                         </form>
                     </div>
 
-                    <!-- Student Tab 4: Update Profile & Password -->
-                    <div id="spanel-profile" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs max-w-2xl space-y-5">
-                        <h3 class="font-display font-bold text-xl text-slate-900">Update Profile Picture & Password</h3>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1.5">Change Profile Photo</label>
-                            <input type="file" accept="image/*" onchange="handleStudentAvatarUpload(event)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs bg-slate-50">
-                        </div>
-                        <form onsubmit="handleStudentPasswordUpdate(event)" class="space-y-4 pt-3 border-t border-slate-100">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">New Portal Password *</label>
-                                <input type="password" id="student-new-password" required minlength="4" placeholder="Enter new password" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                            </div>
+                    <!-- Student Tab 5: Update Profile & Password -->
                             <button type="submit" class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm">
                                 Save New Password
                             </button>
@@ -965,10 +966,11 @@
             <!-- Admin Navigation Tabs -->
             <div class="flex flex-wrap gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-800">
                 <button onclick="switchAdminTab('registrations')" id="atab-registrations" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 text-slate-950">1. Students, Payments & Telegram Approvals</button>
-                <button onclick="switchAdminTab('programs')" id="atab-programs" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">2. Training, Bank Details & Telegram</button>
-                <button onclick="switchAdminTab('branding')" id="atab-branding" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">3. Full Site Editor (Header to Footer)</button>
-                <button onclick="switchAdminTab('testimonies')" id="atab-testimonies" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">4. Student Testimonies</button>
-                <button onclick="switchAdminTab('security')" id="atab-security" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">5. Email Alerts, Cloud & Backup</button>
+                <button onclick="switchAdminTab('videos')" id="atab-videos" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">2. Training Files & Media (Doc/PDF/MP3/MP4)</button>
+                <button onclick="switchAdminTab('programs')" id="atab-programs" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">3. Training, Bank Details & Telegram</button>
+                <button onclick="switchAdminTab('branding')" id="atab-branding" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">4. Full Site Editor (Header to Footer)</button>
+                <button onclick="switchAdminTab('testimonies')" id="atab-testimonies" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">5. Student Testimonies</button>
+                <button onclick="switchAdminTab('security')" id="atab-security" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:bg-slate-800">6. Email Alerts, Cloud & Backup</button>
             </div>
 
             <!-- ADMIN TAB 1: STUDENTS & PAYMENT APPROVALS -->
@@ -1001,47 +1003,88 @@
                 </div>
             </div>
 
-            <!-- ADMIN TAB 2: CREATE / EDIT TRAINING, BANK ACCOUNT, WHATSAPP & TELEGRAM -->
-            <div id="apanel-programs" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
-                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <!-- ADMIN TAB 2: BULK TRAINING VIDEOS DELIVERY & DOWNLOAD ACCESS CONTROL -->
+            <div id="apanel-videos" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
+                <div class="border-b border-slate-800 pb-4">
+                    <h2 class="font-display text-lg font-bold text-white">Upload Multiple Cohort Files (Doc, PDF, MP3 Audio, MP4 Video) & Control Student Access</h2>
+                    <p class="text-xs text-slate-400 mt-1">Select one or multiple files at once. Each file is automatically labeled by type (<strong>Doc</strong>, <strong>PDF</strong>, <strong>MP3 (Audio)</strong>, or <strong>MP4 (Video)</strong>) with its name and remains <strong>locked ("inaccessible")</strong> to students until you approve access.</p>
+                </div>
+
+                <form onsubmit="handleAdminTrainingVideoUpload(event)" class="grid sm:grid-cols-2 gap-4 bg-slate-950 border border-slate-800 rounded-2xl p-5">
                     <div>
-                        <h2 class="font-display text-lg font-bold text-white">Training Cohort, Countdown Schedule, Bank Details & Telegram Setup</h2>
-                        <p class="text-xs text-slate-400">Create a new training cohort or adjust the schedule, countdown date/time, payment deadline, bank account details, WhatsApp link, and Telegram room.</p>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Target Training Cohort *</label>
+                        <select id="admin-video-program-select" required class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white">
+                            <!-- Populated via JS -->
+                        </select>
                     </div>
-                    <button type="button" onclick="prepareNewTrainingForm()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-md">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Batch / Lesson Label (Optional for Multi-File)</label>
+                        <input type="text" id="admin-video-title-input" placeholder="e.g., Week 1 Study Pack (or leave blank to use each file's name)" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Select One or Multiple Files (DOC, DOCX, PDF, MP3, MP4, Audio/Video) *</label>
+                        <input type="file" id="admin-video-file-input" accept=".doc,.docx,.pdf,.mp3,.mp4,audio/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950">
+                        <p id="admin-video-size-hint" class="text-[11px] text-slate-400 mt-1">Each file is automatically categorized as <strong>Doc</strong>, <strong>PDF</strong>, <strong>MP3 (Audio)</strong>, or <strong>MP4 (Video)</strong> with its name and delivered to all students in the selected training cohort. Keep unchecked to require explicit Admin approval before students can download.</p>
+                    </div>
+                    <div class="sm:col-span-2 flex items-center justify-between flex-wrap gap-3 pt-1">
+                        <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="admin-video-allow-immediately" class="rounded border-slate-600 bg-slate-900 text-amber-500">
+                            <span>Approve & allow student download immediately upon upload (leave unchecked to keep as <strong>inaccessible</strong> until approved)</span>
+                        </label>
+                        <button type="submit" id="admin-video-upload-btn" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs">
+                            Upload Files & Deliver to Cohort
+                        </button>
+                    </div>
+                </form>
+
+                <div class="space-y-3">
+                    <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">Uploaded Cohort Files (Doc, PDF, MP3, MP4) & Student Access Approval</h3>
+                    <div id="admin-videos-list" class="grid sm:grid-cols-2 gap-4">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN TAB 3: CREATE / EDIT TRAINING, BANK ACCOUNT, WHATSAPP & TELEGRAM -->
+            <div id="apanel-programs" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="font-display text-lg font-bold text-white">Create or Edit Training Cohort, Early/Late Fees, Countdown, Bank Account & Telegram</h2>
+                        <p class="text-xs text-slate-400 mt-1">Create a new training or edit the active cohort. Adjusting the commencement date/time or early-registration cutoff updates the countdown and pricing automatically.</p>
+                    </div>
+                    <button type="button" onclick="prepareNewTrainingForm()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
                         <span>Create New Training Cohort</span>
                     </button>
                 </div>
 
-                <!-- Saved Trainings Switcher (If Admin Created Multiple Cohorts) -->
                 <div id="admin-saved-trainings-bar" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 block">Created Training Cohorts (Click to Set Active on Site)</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Saved Training Cohorts (Click to Set Active)</span>
                     <div id="admin-saved-trainings-list" class="flex flex-wrap gap-2"></div>
                 </div>
 
                 <form onsubmit="saveFlagshipProgramSettings(event)" class="grid sm:grid-cols-2 gap-4">
-                    <input type="hidden" id="admin-prog-id">
+                    <input type="hidden" id="admin-prog-id" value="program-1">
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1">Training Cohort Title *</label>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Training Title *</label>
                         <input type="text" id="admin-prog-title" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1">Cohort Duration & Schedule Summary *</label>
-                        <input type="text" id="admin-prog-schedule" required placeholder="e.g., 6 Weeks Intensive • Live on Telegram + WhatsApp Mentorship" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Schedule Summary *</label>
+                        <input type="text" id="admin-prog-schedule" required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white">
                     </div>
 
-                    <!-- Dynamic Early & Late Registration Pricing & Intervals -->
+                    <!-- Early & Late Registration Pricing + Automatic Strikethrough Cutoff -->
                     <div class="sm:col-span-2 p-4 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Early & Late Registration Pricing (Automatic Strikethrough Switch)</h3>
-                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Early vs. Late Registration Pricing & Date Intervals (Auto Strikethrough)</h3>
+                        <div class="grid sm:grid-cols-3 gap-3">
                             <div>
                                 <label class="block text-xs font-bold text-emerald-400 mb-1">Early Registration Fee *</label>
-                                <input type="text" id="admin-prog-early-fee" required placeholder="₦1,500" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-bold">
+                                <input type="text" id="admin-prog-early-fee" required placeholder="₦1,500" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-500/40 text-sm text-white font-bold">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-rose-400 mb-1">Late Registration Fee *</label>
-                                <input type="text" id="admin-prog-late-fee" required placeholder="₦2,000" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-bold">
+                                <input type="text" id="admin-prog-late-fee" required placeholder="₦2,000" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-rose-500/40 text-sm text-white font-bold">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-amber-300 mb-1">Early Reg Cutoff Date & Time *</label>
@@ -1558,6 +1601,7 @@
                 }
             ],
             registrations: [],
+            trainingVideos: [],
             testimonies: [
                 {
                     id: 'test-1',
@@ -1599,6 +1643,7 @@
                     about: { ...defaultState.about, ...(parsed.about || {}) },
                     programs: mergedProgs,
                     registrations: Array.isArray(parsed.registrations) ? parsed.registrations : [],
+                    trainingVideos: Array.isArray(parsed.trainingVideos) ? parsed.trainingVideos : [],
                     testimonies: (Array.isArray(parsed.testimonies) && parsed.testimonies.length) ? parsed.testimonies : defaultState.testimonies
                 };
             } catch (e) {
@@ -1664,10 +1709,11 @@
             if (!force && Date.now() - lastLocalSaveTs < 3000) return;
 
             try {
-                const [cfgRes, regsRes, testsRes] = await Promise.all([
+                const [cfgRes, regsRes, testsRes, vidsRes] = await Promise.all([
                     fetch(`${dbUrl}/lhci_config.json`),
                     fetch(`${dbUrl}/lhci_registrations.json`),
-                    fetch(`${dbUrl}/lhci_testimonies.json`)
+                    fetch(`${dbUrl}/lhci_testimonies.json`),
+                    fetch(`${dbUrl}/lhci_training_videos.json`)
                 ]);
 
                 if (cfgRes.ok) {
@@ -1715,11 +1761,29 @@
                     }
                 }
 
+                if (vidsRes && vidsRes.ok) {
+                    const vidsObj = await vidsRes.json();
+                    if (vidsObj && typeof vidsObj === 'object') {
+                        const vidMap = new Map();
+                        (appState.trainingVideos || []).forEach(v => { if (v && v.id) vidMap.set(v.id, v); });
+                        Object.values(vidsObj).forEach(v => {
+                            if (!v || !v.id) return;
+                            const prev = vidMap.get(v.id);
+                            if (!prev || (v.updatedAt || 0) >= (prev.updatedAt || 0)) {
+                                vidMap.set(v.id, v);
+                            }
+                        });
+                        appState.trainingVideos = Array.from(vidMap.values())
+                            .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    }
+                }
+
                 saveStateLocal();
                 refreshAllViews();
-                updateCloudSyncStatusUI(`5,000-User Cloud Synced (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`, true);
-            } catch (e) {
-                console.warn('Cloud pull error:', e);
+                updateCloudSyncStatusUI(`Synced (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`, true);
+            } catch (err) {
+                console.warn('Cloud pull error:', err);
+                updateCloudSyncStatusUI('Sync Warning', false);
             }
         }
 
@@ -1738,78 +1802,39 @@
             showToast('All cross-device records are up to date!', 'success');
         }
 
-        /* Lightweight Image Compression for Fast 5,000-User Cloud Sync */
-        function compressImageDataUrl(file, maxDim = 600, quality = 0.72) {
-            return new Promise((resolve) => {
-                if (!file) return resolve('');
-                if (!file.type.startsWith('image/')) {
-                    const r = new FileReader();
-                    r.onload = () => resolve(r.result || '');
-                    r.onerror = () => resolve('');
-                    r.readAsDataURL(file);
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let w = img.width;
-                        let h = img.height;
-                        if (w > maxDim || h > maxDim) {
-                            if (w > h) {
-                                h = Math.round((h * maxDim) / w);
-                                w = maxDim;
-                            } else {
-                                w = Math.round((w * maxDim) / h);
-                                h = maxDim;
-                            }
-                        }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = w;
-                        canvas.height = h;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
-                    };
-                    img.onerror = () => resolve(e.target.result || '');
-                    img.src = e.target.result;
-                };
-                reader.onerror = () => resolve('');
-                reader.readAsDataURL(file);
-            });
-        }
-
-        /* Toast Notifications */
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             if (!container) return;
-            const toast = document.createElement('div');
             const colors = {
-                success: 'bg-emerald-900 border-emerald-500 text-white',
-                error: 'bg-red-900 border-red-500 text-white',
-                info: 'bg-slate-900 border-amber-500 text-white'
+                success: 'bg-emerald-900 border-emerald-500/40 text-emerald-100',
+                error: 'bg-red-950 border-red-500/40 text-red-100',
+                info: 'bg-slate-900 border-amber-500/40 text-slate-100'
             };
-            toast.className = `pointer-events-auto p-3.5 rounded-xl border shadow-xl text-xs sm:text-sm font-medium flex items-center justify-between gap-3 fade-in ${colors[type] || colors.info}`;
-            toast.innerHTML = `<span>${message}</span>`;
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto border rounded-2xl px-4 py-3 text-xs font-semibold shadow-xl fade-in ${colors[type] || colors.info}`;
+            toast.textContent = message;
             container.appendChild(toast);
             setTimeout(() => {
                 toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 250);
+                toast.style.transition = 'opacity 0.25s ease';
+                setTimeout(() => toast.remove(), 260);
             }, 3800);
         }
 
-        /* Page & Navigation Routing */
-        function navigateTo(page, sectionId = null) {
-            const pages = ['home', 'register', 'student-portal', 'about'];
-            pages.forEach(p => {
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function navigateTo(page, sectionId = '') {
+            document.getElementById('admin-view')?.classList.add('hidden');
+            const pub = document.getElementById('public-view');
+            if (pub) pub.classList.remove('hidden');
+
+            ['home', 'register', 'student-portal', 'about'].forEach(p => {
                 const el = document.getElementById(`page-${p}`);
                 if (el) el.classList.toggle('hidden', p !== page);
             });
-
-            if (isAdminLoggedIn && document.getElementById('admin-view') && !document.getElementById('admin-view').classList.contains('hidden')) {
-                document.getElementById('admin-view').classList.add('hidden');
-                document.getElementById('public-view').classList.remove('hidden');
-            }
 
             if (sectionId) {
                 setTimeout(() => {
@@ -1819,391 +1844,320 @@
             } else {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
+
+            if (page === 'student-portal') {
+                updateStudentAuthViews();
+            } else if (page === 'register') {
+                populateProgramDropdowns();
+                updateRegistrationPaymentInfo();
+            } else if (page === 'about') {
+                renderAboutPage();
+            }
+
             if (window.lucide) lucide.createIcons();
         }
 
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            if (menu) menu.classList.toggle('hidden');
+        function compressImageDataUrl(file, maxDimension = 800, quality = 0.8) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > height && width > maxDimension) {
+                            height = Math.round((height * maxDimension) / width);
+                            width = maxDimension;
+                        } else if (height > maxDimension) {
+                            width = Math.round((width * maxDimension) / height);
+                            height = maxDimension;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = () => resolve(ev.target.result || '');
+                    img.src = ev.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
 
-        /* Render Full Site Content (Header to Footer) */
-        function renderSiteContent() {
-            const b = appState.branding;
-            const setEl = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.textContent = val; };
-            if (b.pageTitle) document.title = b.pageTitle;
-
-            setEl('header-org-name', b.orgName);
-            setEl('header-org-sub', b.orgSub);
-            setEl('header-register-cta', b.headerRegisterCta || 'Register');
-
-            const logoImg = document.getElementById('header-logo-img');
-            const logoIcon = document.getElementById('header-logo-fallback');
-            const faviconEl = document.getElementById('site-favicon');
-            if (logoImg && logoIcon) {
-                if (b.logoUrl) {
-                    logoImg.src = b.logoUrl;
-                    logoImg.classList.remove('hidden');
-                    logoIcon.classList.add('hidden');
-                    if (faviconEl) faviconEl.href = b.logoUrl;
-                } else {
-                    logoImg.classList.add('hidden');
-                    logoIcon.classList.remove('hidden');
-                    if (faviconEl) faviconEl.href = DEFAULT_FAVICON_SVG;
-                }
-            }
-
-            setEl('hero-badge-text', b.heroBadge);
-            setEl('hero-title', b.heroTitle);
-            setEl('hero-subtitle', b.heroSubtitle);
-            setEl('hero-primary-btn-text', b.heroPrimaryBtn || 'Register for Training');
-            setEl('hero-secondary-btn-text', b.heroSecondaryBtn || 'Open Student Portal');
-
-            setEl('hero-stat1-val', b.stat1Val || '5,000+');
-            setEl('hero-stat1-lbl', b.stat1Lbl || 'Cohort Capacity');
-            setEl('hero-stat2-val', b.stat2Val || 'Live');
-            setEl('hero-stat2-lbl', b.stat2Lbl || 'Telegram & WhatsApp Hub');
-            setEl('hero-stat3-val', b.stat3Val || '100%');
-            setEl('hero-stat3-lbl', b.stat3Lbl || 'Verified Certificates');
-
-            setEl('program-section-heading', b.programSectionHeading || 'Flagship Training Program');
-
-            setEl('founder-name-display', b.founderName);
-            setEl('founder-role-display', b.founderRole);
-            setEl('founder-bio-display', b.founderBio);
-            setEl('founder-quote-display', b.founderQuote);
-
-            const fImg = document.getElementById('founder-photo-img');
-            if (fImg && b.founderPhoto) fImg.src = b.founderPhoto;
-
-            setEl('footer-brand-title', b.footerBrandTitle || `${b.orgName} ${b.orgSub}`.trim());
-            setEl('footer-copyright-org', b.footerBrandTitle || `${b.orgName} ${b.orgSub}`.trim());
-            setEl('footer-brand-desc', b.footerBrandDesc);
-            setEl('footer-brand-highlight', b.footerBrandHighlight);
-            setEl('footer-contact-email', b.contactEmail || 'info@lighthousecreatives.org');
-            setEl('footer-tagline-text', b.footerTagline || 'Illuminating Global Talent Through Creative Excellence');
-        }
-
-        /* Render Flagship Program + Live Countdown + Payment Account Summary */
         function getProgramPricingState(prog) {
-            const p = prog || appState.programs[0] || defaultState.programs[0];
-            const earlyFee = p.earlyFee || '₦1,500';
+            const p = prog || defaultState.programs[0];
+            const earlyFee = p.earlyFee || p.fee || '₦1,500';
             const lateFee = p.lateFee || '₦2,000';
-            const cutoffMs = p.earlyCutoffISO ? new Date(p.earlyCutoffISO).getTime() : NaN;
-            const isLate = !isNaN(cutoffMs) && Date.now() > cutoffMs;
+            const cutoffMs = p.earlyCutoffISO ? Date.parse(p.earlyCutoffISO) : NaN;
+            const isLate = !Number.isNaN(cutoffMs) && Date.now() >= cutoffMs;
             return {
                 isLate,
                 earlyFee,
                 lateFee,
-                activeFee: isLate ? lateFee : earlyFee,
-                earlyInterval: p.earlyInterval || 'Nov 24 – Dec 5, 2026',
-                lateInterval: p.lateInterval || 'Dec 6 – Dec 11, 2026'
+                activeFee: isLate ? lateFee : earlyFee
             };
         }
 
-        function formatTrainingDateTimeDisplay(isoStr) {
-            if (!isoStr) return 'Schedule To Be Announced';
-            const dt = new Date(isoStr);
-            if (isNaN(dt.getTime())) return isoStr;
-            return dt.toLocaleString([], {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+        function updateLiveCountdownDisplay() {
+            const prog = (appState.programs && appState.programs[0]) || defaultState.programs[0];
+            const pricing = getProgramPricingState(prog);
+            const dtLabel = document.getElementById('hero-training-datetime-label');
+            const dlLabel = document.getElementById('hero-payment-deadline-label');
+            const topSched = document.getElementById('top-cd-schedule-text');
+
+            const targetMs = prog.startDateTimeISO ? Date.parse(prog.startDateTimeISO) : NaN;
+            const formattedStart = !Number.isNaN(targetMs)
+                ? new Date(targetMs).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : (prog.telegramDate || 'Schedule TBA');
+
+            if (dtLabel) dtLabel.textContent = `Starts: ${formattedStart}`;
+            if (dlLabel) dlLabel.textContent = prog.paymentDeadline || 'TBA';
+            if (topSched) {
+                topSched.textContent = `${pricing.isLate ? 'Late Reg' : 'Early Bird'}: ${pricing.activeFee} • ${formattedStart}`;
+            }
+
+            let days = '00', hours = '00', mins = '00', secs = '00';
+            if (!Number.isNaN(targetMs)) {
+                const diff = Math.max(0, targetMs - Date.now());
+                days = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+                mins = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0');
+                secs = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+            }
+
+            const map = {
+                'cd-days': days, 'cd-hours': hours, 'cd-mins': mins, 'cd-secs': secs,
+                'top-cd-days': days, 'top-cd-hours': hours, 'top-cd-mins': mins, 'top-cd-secs': secs
+            };
+            Object.entries(map).forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
             });
         }
 
-        let lastKnownLatePricingFlag = null;
-
-        function startLiveTrainingCountdown() {
-            if (countdownIntervalId) clearInterval(countdownIntervalId);
-
-            const tick = () => {
-                const prog = appState.programs[0] || defaultState.programs[0];
-                const pricing = getProgramPricingState(prog);
-                if (lastKnownLatePricingFlag !== null && lastKnownLatePricingFlag !== pricing.isLate) {
-                    lastKnownLatePricingFlag = pricing.isLate;
-                    renderPrograms();
-                    populateProgramDropdowns();
-                    return;
-                }
-                lastKnownLatePricingFlag = pricing.isLate;
-
-                const dtLabel = formatTrainingDateTimeDisplay(prog.startDateTimeISO);
-                const topSchedEl = document.getElementById('top-cd-schedule-text');
-                const heroDtEl = document.getElementById('hero-training-datetime-label');
-                const heroDlEl = document.getElementById('hero-payment-deadline-label');
-                const cardDtEl = document.getElementById('card-training-datetime-label');
-                const cardDlEl = document.getElementById('card-payment-deadline-label');
-
-                if (topSchedEl) topSchedEl.textContent = `${dtLabel} • ${pricing.isLate ? 'Late Reg' : 'Early Bird'} (${pricing.activeFee})`;
-                if (heroDtEl) heroDtEl.textContent = `Starts: ${dtLabel}`;
-                if (heroDlEl) heroDlEl.textContent = prog.paymentDeadline || 'TBA';
-                if (cardDtEl) cardDtEl.textContent = dtLabel;
-                if (cardDlEl) cardDlEl.textContent = prog.paymentDeadline || 'TBA';
-
-                const targetMs = prog.startDateTimeISO ? new Date(prog.startDateTimeISO).getTime() : NaN;
-                const diff = !isNaN(targetMs) ? Math.max(0, targetMs - Date.now()) : 0;
-
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-                const mins = Math.floor((diff / (1000 * 60)) % 60);
-                const secs = Math.floor((diff / 1000) % 60);
-
-                const pad = (n) => String(n).padStart(2, '0');
-                const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-                setTxt('top-cd-days', pad(days));
-                setTxt('top-cd-hours', pad(hours));
-                setTxt('top-cd-mins', pad(mins));
-                setTxt('top-cd-secs', pad(secs));
-                setTxt('cd-days', pad(days));
-                setTxt('cd-hours', pad(hours));
-                setTxt('cd-mins', pad(mins));
-                setTxt('cd-secs', pad(secs));
-                setTxt('prog-cd-days', pad(days));
-                setTxt('prog-cd-hours', pad(hours));
-                setTxt('prog-cd-mins', pad(mins));
-                setTxt('prog-cd-secs', pad(secs));
+        function renderSiteContent() {
+            const b = appState.branding || defaultState.branding;
+            const setText = (id, val) => {
+                const el = document.getElementById(id);
+                if (el && typeof val === 'string') el.textContent = val;
             };
 
-            tick();
-            countdownIntervalId = setInterval(tick, 1000);
+            if (b.pageTitle) document.title = b.pageTitle;
+            setText('header-org-name', b.orgName);
+            setText('header-org-sub', b.orgSub);
+            setText('header-register-cta', b.headerRegisterCta);
+
+            const logoImg = document.getElementById('header-logo-img');
+            const logoFallback = document.getElementById('header-logo-fallback');
+            const favicon = document.getElementById('site-favicon');
+            if (b.logoUrl) {
+                if (logoImg) { logoImg.src = b.logoUrl; logoImg.classList.remove('hidden'); }
+                if (logoFallback) logoFallback.classList.add('hidden');
+                if (favicon) favicon.href = b.logoUrl;
+            } else {
+                if (logoImg) { logoImg.src = ''; logoImg.classList.add('hidden'); }
+                if (logoFallback) logoFallback.classList.remove('hidden');
+                if (favicon) favicon.href = DEFAULT_FAVICON_SVG;
+            }
+
+            setText('hero-badge-text', b.heroBadge);
+            setText('hero-title', b.heroTitle);
+            setText('hero-subtitle', b.heroSubtitle);
+            setText('hero-primary-btn-text', b.heroPrimaryBtn);
+            setText('hero-secondary-btn-text', b.heroSecondaryBtn);
+            setText('hero-stat1-val', b.stat1Val);
+            setText('hero-stat1-lbl', b.stat1Lbl);
+            setText('hero-stat2-val', b.stat2Val);
+            setText('hero-stat2-lbl', b.stat2Lbl);
+            setText('hero-stat3-val', b.stat3Val);
+            setText('hero-stat3-lbl', b.stat3Lbl);
+            setText('program-section-heading', b.programSectionHeading);
+
+            setText('founder-name-display', b.founderName);
+            setText('founder-role-display', b.founderRole);
+            setText('founder-bio-display', b.founderBio);
+            setText('founder-quote-display', b.founderQuote);
+            const founderImg = document.getElementById('founder-photo-img');
+            if (founderImg && b.founderPhoto) {
+                founderImg.src = b.founderPhoto;
+            }
+
+            setText('footer-brand-title', b.footerBrandTitle);
+            setText('footer-brand-desc', b.footerBrandDesc);
+            setText('footer-brand-highlight', b.footerBrandHighlight);
+            setText('footer-contact-email', b.contactEmail);
+            setText('footer-copyright-org', b.orgName);
+            setText('footer-tagline-text', b.footerTagline);
+
+            updateLiveCountdownDisplay();
+            if (!countdownIntervalId) {
+                countdownIntervalId = setInterval(updateLiveCountdownDisplay, 1000);
+            }
         }
 
         function renderPrograms() {
             const grid = document.getElementById('programs-grid');
             if (!grid) return;
-            const prog = appState.programs[0] || defaultState.programs[0];
-            const dtDisplay = formatTrainingDateTimeDisplay(prog.startDateTimeISO);
+            const prog = (appState.programs && appState.programs[0]) || defaultState.programs[0];
             const pricing = getProgramPricingState(prog);
-            const flierHtml = prog.flierUrl
-                ? `<div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900/5 p-2 sm:p-3 flex flex-col items-center">
-                       <img src="${prog.flierUrl}" alt="${prog.title} Flier" onclick="openFlierLightbox('${prog.id}')" class="w-full max-h-[460px] object-contain rounded-xl cursor-zoom-in shadow-sm" title="Click to enlarge flier">
-                       <span class="text-[11px] text-slate-500 mt-2 font-medium flex items-center gap-1"><i data-lucide="zoom-in" class="w-3.5 h-3.5 text-amber-600"></i> Click flier to view full size</span>
-                   </div>`
-                : '';
+            const startMs = prog.startDateTimeISO ? Date.parse(prog.startDateTimeISO) : NaN;
+            const formattedStart = !Number.isNaN(startMs)
+                ? new Date(startMs).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : (prog.telegramDate || 'TBA');
 
-            const priceDisplayHtml = pricing.isLate
-                ? `<div class="text-right">
-                       <div class="flex items-baseline justify-end gap-2">
-                           <span class="text-base sm:text-lg font-bold text-slate-400 line-through decoration-2 decoration-rose-500">${pricing.earlyFee}</span>
-                           <span class="font-display text-2xl sm:text-3xl font-extrabold text-rose-600">${pricing.lateFee}</span>
-                       </div>
-                       <span class="inline-block mt-0.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-700 text-[10px] font-extrabold uppercase tracking-wider">Late Registration Active</span>
-                   </div>`
-                : `<div class="text-right">
-                       <div class="flex items-baseline justify-end gap-2">
-                           <span class="font-display text-2xl sm:text-3xl font-extrabold text-emerald-600">${pricing.earlyFee}</span>
-                           <span class="text-base sm:text-lg font-bold text-slate-400 line-through decoration-2 decoration-slate-400">${pricing.lateFee}</span>
-                       </div>
-                       <span class="inline-block mt-0.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 text-[10px] font-extrabold uppercase tracking-wider">Early Registration Active</span>
-                   </div>`;
+            const earlyPriceHtml = pricing.isLate
+                ? `<span class="line-through text-slate-400 text-base font-semibold">${pricing.earlyFee}</span>`
+                : `<span class="font-display text-2xl sm:text-3xl font-extrabold text-emerald-700">${pricing.earlyFee}</span>`;
+
+            const latePriceHtml = pricing.isLate
+                ? `<span class="font-display text-2xl sm:text-3xl font-extrabold text-rose-700">${pricing.lateFee}</span>`
+                : `<span class="line-through text-slate-400 text-base font-semibold">${pricing.lateFee}</span>`;
 
             grid.innerHTML = `
-                <div class="bg-slate-50 rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm rainbow-border-card space-y-6">
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                        <span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-800 text-xs font-bold uppercase tracking-wider">${prog.category || 'Flagship Cohort'}</span>
-                        ${priceDisplayHtml}
-                    </div>
-
-                    ${flierHtml}
-
-                    <div>
-                        <h3 class="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">${prog.title}</h3>
-                        <p class="text-xs sm:text-sm font-semibold text-amber-700 mt-1.5 flex items-center gap-1.5">
-                            <i data-lucide="calendar" class="w-4 h-4"></i>
-                            <span>${prog.schedule}</span>
-                        </p>
-                    </div>
-
-                    <!-- Early & Late Registration Windows -->
-                    <div class="grid sm:grid-cols-2 gap-3">
-                        <div class="p-4 rounded-2xl border ${!pricing.isLate ? 'bg-emerald-50/80 border-emerald-400 shadow-xs' : 'bg-white border-slate-200 opacity-75'}">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[11px] font-extrabold uppercase tracking-wider ${!pricing.isLate ? 'text-emerald-800' : 'text-slate-500'}">Early Registration</span>
-                                <span class="font-display text-lg font-extrabold ${pricing.isLate ? 'line-through text-slate-400' : 'text-emerald-700'}">${pricing.earlyFee}</span>
+                <div class="bg-slate-50 rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 rainbow-border-card space-y-6">
+                    <div class="flex flex-col lg:flex-row gap-6 items-start">
+                        ${prog.flierUrl
+                            ? `<img src="${prog.flierUrl}" alt="${prog.title} Flier" onclick="viewTrainingFlierModal()" class="w-full lg:w-56 h-64 object-cover rounded-2xl border border-slate-200 shadow-sm cursor-pointer shrink-0">`
+                            : ''}
+                        <div class="flex-1 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-800 text-xs font-bold uppercase tracking-wider">${prog.category || 'Flagship Cohort Training'}</span>
+                                <span class="text-xs font-semibold text-slate-500">${prog.schedule || ''}</span>
                             </div>
-                            <p class="text-xs font-semibold ${!pricing.isLate ? 'text-emerald-900' : 'text-slate-500'} mt-1">${pricing.earlyInterval}</p>
-                        </div>
-                        <div class="p-4 rounded-2xl border ${pricing.isLate ? 'bg-rose-50/80 border-rose-400 shadow-xs' : 'bg-white border-slate-200'}">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[11px] font-extrabold uppercase tracking-wider ${pricing.isLate ? 'text-rose-800' : 'text-slate-500'}">Late Registration</span>
-                                <span class="font-display text-lg font-extrabold ${!pricing.isLate ? 'line-through text-slate-400' : 'text-rose-700'}">${pricing.lateFee}</span>
-                            </div>
-                            <p class="text-xs font-semibold ${pricing.isLate ? 'text-rose-900' : 'text-slate-600'} mt-1">${pricing.lateInterval}</p>
-                        </div>
-                    </div>
+                            <h3 class="font-display text-xl sm:text-3xl font-extrabold text-slate-900">${prog.title}</h3>
+                            <p class="text-slate-600 text-sm sm:text-base leading-relaxed">${prog.description}</p>
 
-                    <!-- Training Schedule, Deadline & Live Countdown Box -->
-                    <div class="grid sm:grid-cols-2 gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200">
-                        <div class="space-y-2 text-xs sm:text-sm">
-                            <div class="flex items-start gap-2">
-                                <i data-lucide="clock" class="w-4 h-4 text-amber-600 mt-0.5 shrink-0"></i>
+                            <!-- Early & Late Registration Pricing with Automatic Strikethrough -->
+                            <div class="grid sm:grid-cols-2 gap-3 pt-1">
+                                <div class="p-3.5 rounded-2xl bg-white border ${pricing.isLate ? 'border-slate-200 opacity-75' : 'border-emerald-300 shadow-xs'}">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-bold uppercase text-emerald-700">Early Registration</span>
+                                        ${earlyPriceHtml}
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-1"><strong>Period:</strong> ${prog.earlyInterval || 'TBA'}</p>
+                                </div>
+                                <div class="p-3.5 rounded-2xl bg-white border ${pricing.isLate ? 'border-rose-300 shadow-xs' : 'border-slate-200 opacity-75'}">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-bold uppercase text-rose-700">Late Registration</span>
+                                        ${latePriceHtml}
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-1"><strong>Period:</strong> ${prog.lateInterval || 'TBA'}</p>
+                                </div>
+                            </div>
+
+                            <!-- Schedule & Bank Account Summary -->
+                            <div class="grid sm:grid-cols-2 gap-3 text-xs bg-white p-4 rounded-2xl border border-slate-200">
                                 <div>
-                                    <span class="text-slate-500 block text-[11px] uppercase font-bold">Training Date & Time</span>
-                                    <strong id="card-training-datetime-label" class="text-slate-900">${dtDisplay}</strong>
+                                    <span class="text-slate-400 block uppercase font-bold text-[10px]">Commencement & Payment Deadline</span>
+                                    <p class="text-slate-900 font-bold mt-0.5">Start: ${formattedStart}</p>
+                                    <p class="text-rose-700 font-semibold mt-0.5">Deadline: ${prog.paymentDeadline || 'TBA'}</p>
                                 </div>
-                            </div>
-                            <div class="flex items-start gap-2 pt-1">
-                                <i data-lucide="alarm-clock" class="w-4 h-4 text-rose-600 mt-0.5 shrink-0"></i>
                                 <div>
-                                    <span class="text-slate-500 block text-[11px] uppercase font-bold">Payment Deadline</span>
-                                    <strong id="card-payment-deadline-label" class="text-rose-700">${prog.paymentDeadline || 'TBA'}</strong>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-slate-900 text-white rounded-xl p-3.5 text-center flex flex-col justify-center">
-                            <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Countdown to Commencement</span>
-                            <div class="grid grid-cols-4 gap-1.5 mt-2">
-                                <div class="bg-white/10 rounded-lg py-1.5">
-                                    <span id="prog-cd-days" class="font-display text-base sm:text-lg font-extrabold block leading-none">00</span>
-                                    <span class="text-[9px] text-slate-400 uppercase">Days</span>
-                                </div>
-                                <div class="bg-white/10 rounded-lg py-1.5">
-                                    <span id="prog-cd-hours" class="font-display text-base sm:text-lg font-extrabold text-amber-400 block leading-none">00</span>
-                                    <span class="text-[9px] text-slate-400 uppercase">Hrs</span>
-                                </div>
-                                <div class="bg-white/10 rounded-lg py-1.5">
-                                    <span id="prog-cd-mins" class="font-display text-base sm:text-lg font-extrabold text-emerald-400 block leading-none">00</span>
-                                    <span class="text-[9px] text-slate-400 uppercase">Mins</span>
-                                </div>
-                                <div class="bg-white/10 rounded-lg py-1.5">
-                                    <span id="prog-cd-secs" class="font-display text-base sm:text-lg font-extrabold text-sky-400 block leading-none">00</span>
-                                    <span class="text-[9px] text-slate-400 uppercase">Secs</span>
+                                    <span class="text-slate-400 block uppercase font-bold text-[10px]">Official Tuition Bank Account</span>
+                                    <p class="text-slate-900 font-bold mt-0.5">${prog.bankName || ''} • <span class="font-mono">${prog.accountNumber || ''}</span></p>
+                                    <p class="text-slate-600 mt-0.5">${prog.accountName || ''}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed">${prog.description}</p>
-
-                    <!-- Official Payment Bank Account Details Card -->
-                    <div class="p-4 sm:p-5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2 text-xs sm:text-sm">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-amber-800 block">Official Tuition Payment Account</span>
-                        <div class="grid sm:grid-cols-3 gap-2 pt-1">
-                            <div class="bg-white p-3 rounded-xl border border-amber-200/80">
-                                <span class="text-[10px] uppercase text-slate-500 font-bold block">Bank Name</span>
-                                <strong class="text-slate-900">${prog.bankName || 'Zenith Bank / First Bank'}</strong>
-                            </div>
-                            <div class="bg-white p-3 rounded-xl border border-amber-200/80">
-                                <span class="text-[10px] uppercase text-slate-500 font-bold block">Account Name</span>
-                                <strong class="text-slate-900">${prog.accountName || 'LIGHT HOUSE CREATIVES INTERNATIONAL'}</strong>
-                            </div>
-                            <div class="bg-white p-3 rounded-xl border border-amber-200/80 flex items-center justify-between gap-2">
-                                <div>
-                                    <span class="text-[10px] uppercase text-slate-500 font-bold block">Account Number</span>
-                                    <strong class="font-mono text-base text-slate-950 select-all">${prog.accountNumber || '1234567890'}</strong>
-                                </div>
-                                <button type="button" onclick="copyPaymentAccountNumber()" class="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-bold shrink-0">Copy</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid sm:grid-cols-3 gap-3 pt-4 border-t border-slate-200/80 text-xs font-semibold text-slate-700">
-                        <div class="flex items-center gap-2"><i data-lucide="message-circle" class="w-4 h-4 text-emerald-600"></i> WhatsApp Cohort Community</div>
-                        <div class="flex items-center gap-2"><i data-lucide="send" class="w-4 h-4 text-sky-600"></i> Live Interactive Telegram Sessions</div>
-                        <div class="flex items-center gap-2"><i data-lucide="award" class="w-4 h-4 text-amber-600"></i> Verified Digital Certificate</div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-3">
-                        <button onclick="navigateTo('register')" class="px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all flex items-center gap-2 shadow-md">
-                            <span>Register Now & Join WhatsApp Group</span>
-                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200">
+                        <span class="text-xs font-bold text-slate-700">
+                            Active Tuition Now: <strong class="text-amber-700 text-sm">${pricing.activeFee}</strong> (${pricing.isLate ? 'Late Registration' : 'Early Registration'})
+                        </span>
+                        <button onclick="navigateTo('register')" class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm shadow-md transition-all">
+                            Register for This Training →
                         </button>
                     </div>
                 </div>
             `;
-            startLiveTrainingCountdown();
         }
 
-        function openFlierLightbox(progId) {
-            const prog = appState.programs.find(p => p.id === progId) || appState.programs[0];
+        function viewTrainingFlierModal() {
+            const prog = (appState.programs && appState.programs[0]) || defaultState.programs[0];
             if (!prog || !prog.flierUrl) return;
-            document.getElementById('inspect-modal-title').textContent = `${prog.title} — Official Flier`;
+            document.getElementById('inspect-modal-title').textContent = `${prog.title} — Training Flier`;
             document.getElementById('inspect-modal-body').innerHTML = `
-                <img src="${prog.flierUrl}" alt="${prog.title} Flier" class="w-full max-h-[75vh] object-contain rounded-2xl border border-slate-700 bg-black">
+                <img src="${prog.flierUrl}" alt="Training Flier" class="w-full max-h-[70vh] object-contain rounded-2xl border border-slate-700 bg-black">
             `;
             document.getElementById('admin-inspect-modal').classList.remove('hidden');
         }
 
-        function copyPaymentAccountNumber() {
-            const prog = appState.programs[0] || defaultState.programs[0];
-            const acct = prog.accountNumber || '1234567890';
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(acct);
-            }
-            showToast(`Account number ${acct} copied to clipboard!`, 'success');
-        }
-
         function populateProgramDropdowns() {
-            const select = document.getElementById('reg-program');
-            if (!select) return;
-            select.innerHTML = appState.programs.map(p => {
-                const pricing = getProgramPricingState(p);
-                return `<option value="${p.id}">${p.title} (${pricing.activeFee} — ${pricing.isLate ? 'Late Reg' : 'Early Reg'})</option>`;
-            }).join('');
-            updateRegistrationPaymentInfo();
+            const sel = document.getElementById('reg-program');
+            if (!sel) return;
+            const currentVal = sel.value;
+            sel.innerHTML = (appState.programs || []).map(p =>
+                `<option value="${p.id}">${p.title}</option>`
+            ).join('');
+            if (currentVal && Array.from(sel.options).some(o => o.value === currentVal)) {
+                sel.value = currentVal;
+            }
         }
 
         function updateRegistrationPaymentInfo() {
-            const select = document.getElementById('reg-program');
-            const selectedId = select ? select.value : '';
-            const prog = appState.programs.find(p => p.id === selectedId) || appState.programs[0] || defaultState.programs[0];
-            const pricing = getProgramPricingState(prog);
-            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
+            const sel = document.getElementById('reg-program');
+            const progId = sel ? sel.value : '';
+            const prog = (appState.programs || []).find(p => p.id === progId) || appState.programs[0] || defaultState.programs[0];
+            if (!prog) return;
 
-            const feeBox = document.getElementById('reg-program-fee-box');
-            const tierBadge = document.getElementById('reg-pricing-tier-badge');
-            if (feeBox) {
-                feeBox.innerHTML = pricing.isLate
-                    ? `<span class="text-xs font-bold text-slate-400 line-through mr-1.5">${pricing.earlyFee}</span><span class="font-display text-xl font-extrabold text-rose-600">${pricing.lateFee}</span>`
-                    : `<span class="font-display text-xl font-extrabold text-emerald-600">${pricing.earlyFee}</span><span class="text-xs font-bold text-slate-400 line-through ml-1.5">${pricing.lateFee}</span>`;
-            }
-            if (tierBadge) {
-                tierBadge.className = pricing.isLate
+            const pricing = getProgramPricingState(prog);
+            const startMs = prog.startDateTimeISO ? Date.parse(prog.startDateTimeISO) : NaN;
+            const formattedStart = !Number.isNaN(startMs)
+                ? new Date(startMs).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : (prog.telegramDate || 'TBA');
+
+            const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || ''; };
+            setText('reg-program-datetime', formattedStart);
+            setText('reg-early-interval', `${prog.earlyInterval || 'TBA'} (${prog.earlyFee || '₦1,500'})`);
+            setText('reg-late-interval', `${prog.lateInterval || 'TBA'} (${prog.lateFee || '₦2,000'})`);
+            setText('reg-program-schedule', `Payment Deadline: ${prog.paymentDeadline || 'TBA'}`);
+
+            const badge = document.getElementById('reg-pricing-tier-badge');
+            if (badge) {
+                badge.className = pricing.isLate
                     ? 'inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-700'
                     : 'inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700';
-                tierBadge.textContent = pricing.isLate ? 'Late Registration Active' : 'Early Registration Active';
+                badge.textContent = pricing.isLate ? 'Late Registration Active' : 'Early Registration Active';
             }
-            setTxt('reg-program-datetime', formatTrainingDateTimeDisplay(prog.startDateTimeISO));
-            setTxt('reg-early-interval', `${pricing.earlyInterval} (${pricing.earlyFee})`);
-            setTxt('reg-late-interval', `${pricing.lateInterval} (${pricing.lateFee})`);
-            setTxt('reg-program-schedule', prog.schedule || '');
-            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
-            setVal('reg-bank-name', prog.bankName || 'Zenith Bank / First Bank');
-            setVal('reg-account-name', prog.accountName || 'LIGHT HOUSE CREATIVES INTERNATIONAL');
-            setVal('reg-account-number', prog.accountNumber || '1234567890');
-            setVal('reg-payment-instructions', prog.paymentInstructions);
 
-            let regFlierEl = document.getElementById('reg-program-flier-box');
-            if (!regFlierEl && select && select.parentElement) {
-                regFlierEl = document.createElement('div');
-                regFlierEl.id = 'reg-program-flier-box';
-                select.parentElement.appendChild(regFlierEl);
+            const feeBox = document.getElementById('reg-program-fee-box');
+            if (feeBox) {
+                feeBox.innerHTML = pricing.isLate
+                    ? `<span class="line-through text-slate-400 text-xs block">${pricing.earlyFee}</span><span class="font-display text-xl font-extrabold text-rose-700">${pricing.lateFee}</span>`
+                    : `<span class="font-display text-xl font-extrabold text-emerald-700">${pricing.earlyFee}</span> <span class="line-through text-slate-400 text-xs">${pricing.lateFee}</span>`;
             }
-            if (regFlierEl) {
-                regFlierEl.innerHTML = prog.flierUrl
-                    ? `<div class="pt-2"><img src="${prog.flierUrl}" alt="${prog.title} Flier" onclick="openFlierLightbox('${prog.id}')" class="w-full max-h-64 object-contain rounded-xl border border-slate-200 bg-white p-1.5 cursor-zoom-in shadow-xs" title="Click to enlarge flier"></div>`
-                    : '';
-            }
+
+            setText('reg-bank-name', prog.bankName || 'Zenith Bank / First Bank');
+            setText('reg-account-name', prog.accountName || 'LIGHT HOUSE CREATIVES INTERNATIONAL');
+            setText('reg-account-number', prog.accountNumber || '1234567890');
+            setText('reg-payment-instructions', prog.paymentInstructions || '');
         }
 
-        /* Student Registration + Immediate WhatsApp Group Link */
+        function copyPaymentAccountNumber() {
+            const accEl = document.getElementById('reg-account-number');
+            const num = accEl ? accEl.textContent.trim() : '';
+            if (!num) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(num).catch(() => {});
+            }
+            showToast(`Copied account number: ${num}`, 'success');
+        }
+
         async function handleStudentRegistration(e) {
             e.preventDefault();
             const btn = document.getElementById('reg-submit-btn');
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<span>Submitting Registration & Syncing...</span>';
+                btn.textContent = 'Submitting Registration & Syncing...';
             }
 
             try {
-                const select = document.getElementById('reg-program');
-                const selectedId = select ? select.value : '';
-                const prog = appState.programs.find(p => p.id === selectedId) || appState.programs[0] || defaultState.programs[0];
+                const progId = document.getElementById('reg-program').value;
+                const prog = (appState.programs || []).find(p => p.id === progId) || appState.programs[0] || defaultState.programs[0];
                 const fullName = document.getElementById('reg-fullname').value.trim();
                 const email = document.getElementById('reg-email').value.trim().toLowerCase();
                 const phone = document.getElementById('reg-phone').value.trim();
@@ -2211,49 +2165,56 @@
                 const password = document.getElementById('reg-password').value;
                 const paymentRef = document.getElementById('reg-payment-ref').value.trim();
 
-                const avatarFile = document.getElementById('reg-avatar-file').files[0];
-                const receiptFile = document.getElementById('reg-receipt-file').files[0];
+                const avatarFile = document.getElementById('reg-avatar-file')?.files[0];
+                const receiptFile = document.getElementById('reg-receipt-file')?.files[0];
 
-                const avatarData = avatarFile
-                    ? await compressImageDataUrl(avatarFile, 240, 0.72)
-                    : `https://placehold.co/150x150/1E293B/F59E0B?text=${encodeURIComponent(fullName.slice(0, 2).toUpperCase())}`;
+                let avatarData = `https://placehold.co/150x150/1E293B/F59E0B?text=${encodeURIComponent(fullName.slice(0, 2).toUpperCase())}`;
+                if (avatarFile) {
+                    avatarData = await compressImageDataUrl(avatarFile, 240, 0.75);
+                }
 
-                const receiptData = receiptFile
-                    ? await compressImageDataUrl(receiptFile, 650, 0.72)
-                    : '';
+                let receiptData = '';
+                let receiptFileName = receiptFile ? receiptFile.name : 'receipt';
+                if (receiptFile) {
+                    receiptData = receiptFile.type.startsWith('image/')
+                        ? await compressImageDataUrl(receiptFile, 900, 0.75)
+                        : await readFileAsDataUrlWithProgress(receiptFile);
+                }
 
                 const now = Date.now();
-                const existingIdx = appState.registrations.findIndex(r => r.email === email);
-                const regId = existingIdx >= 0 ? appState.registrations[existingIdx].id : `STU-${now}-${Math.floor(100 + Math.random() * 900)}`;
-
+                const regId = `REG-${now}-${Math.floor(100 + Math.random() * 900)}`;
                 const record = {
                     id: regId,
+                    programId: prog.id,
+                    programTitle: prog.title,
                     fullName,
                     email,
                     phone,
                     location,
                     password,
-                    programId: prog.id,
-                    programTitle: prog.title,
                     paymentRef,
                     receiptData,
-                    receiptFileName: receiptFile ? receiptFile.name : 'Receipt Attached',
+                    receiptFileName,
                     avatar: avatarData,
-                    paymentApproved: existingIdx >= 0 ? appState.registrations[existingIdx].paymentApproved : false,
-                    isRestricted: existingIdx >= 0 ? Boolean(appState.registrations[existingIdx].isRestricted) : false,
-                    certificateIssued: existingIdx >= 0 ? appState.registrations[existingIdx].certificateIssued : false,
-                    certificateData: existingIdx >= 0 ? appState.registrations[existingIdx].certificateData : '',
-                    certificateFileName: existingIdx >= 0 ? appState.registrations[existingIdx].certificateFileName : '',
-                    resetCode: '',
-                    resetExpiresAt: 0,
+                    paymentApproved: false,
+                    isRestricted: false,
+                    certificateIssued: false,
+                    certificateData: '',
+                    certificateFileName: '',
+                    isOnline: true,
                     lastLoginAt: now,
                     loginCount: 1,
-                    isOnline: true,
-                    createdAt: existingIdx >= 0 ? appState.registrations[existingIdx].createdAt : now,
+                    createdAt: now,
                     updatedAt: now
                 };
 
+                const existingIdx = appState.registrations.findIndex(r => r.email === email);
                 if (existingIdx >= 0) {
+                    record.id = appState.registrations[existingIdx].id;
+                    record.paymentApproved = appState.registrations[existingIdx].paymentApproved;
+                    record.certificateIssued = appState.registrations[existingIdx].certificateIssued;
+                    record.certificateData = appState.registrations[existingIdx].certificateData;
+                    record.certificateFileName = appState.registrations[existingIdx].certificateFileName;
                     appState.registrations[existingIdx] = record;
                 } else {
                     appState.registrations.unshift(record);
@@ -2262,8 +2223,6 @@
                 activeStudentEmail = email;
                 localStorage.setItem(STUDENT_SESSION_KEY, email);
 
-                saveStateLocal();
-                await syncSingleNodeToFirebase(`lhci_registrations/${regId}`, record);
 
                 sendAdminNotificationEmail(
                     `New Student Registration: ${fullName}`,
@@ -2452,10 +2411,88 @@
                 certPending.classList.remove('hidden');
                 certReady.classList.add('hidden');
             }
+
+            renderStudentTrainingVideos(validStudent);
+        }
+
+        function detectCohortFileCategory(file) {
+            const name = (file?.name || '').toLowerCase();
+            const mime = (file?.type || '').toLowerCase();
+            if (name.endsWith('.pdf') || mime.includes('pdf')) {
+                return { type: 'PDF', badgeClass: 'bg-rose-500/15 text-rose-700', adminBadgeClass: 'bg-rose-500/20 text-rose-300' };
+            }
+            if (name.endsWith('.doc') || name.endsWith('.docx') || mime.includes('word') || mime.includes('document')) {
+                return { type: 'Doc', badgeClass: 'bg-blue-500/15 text-blue-700', adminBadgeClass: 'bg-blue-500/20 text-blue-300' };
+            }
+            if (name.endsWith('.mp3') || mime.includes('audio') || name.includes('mpeg')) {
+                return { type: 'MP3 (Audio)', badgeClass: 'bg-purple-500/15 text-purple-700', adminBadgeClass: 'bg-purple-500/20 text-purple-300' };
+            }
+            return { type: 'MP4 (Video)', badgeClass: 'bg-amber-500/15 text-amber-800', adminBadgeClass: 'bg-amber-500/20 text-amber-300' };
+        }
+
+        function getStoredFileCategoryMeta(categoryLabel) {
+            const cat = categoryLabel || 'MP4 (Video)';
+            if (cat === 'PDF') {
+                return { label: 'PDF', studentBadge: 'bg-rose-500/15 text-rose-700', adminBadge: 'bg-rose-500/20 text-rose-300', actionText: 'Download PDF' };
+            }
+            if (cat === 'Doc') {
+                return { label: 'Doc', studentBadge: 'bg-blue-500/15 text-blue-700', adminBadge: 'bg-blue-500/20 text-blue-300', actionText: 'Download Doc' };
+            }
+            if (cat.includes('MP3') || cat.includes('Audio')) {
+                return { label: 'MP3 (Audio)', studentBadge: 'bg-purple-500/15 text-purple-700', adminBadge: 'bg-purple-500/20 text-purple-300', actionText: 'Download MP3 (Audio)' };
+            }
+            return { label: 'MP4 (Video)', studentBadge: 'bg-amber-500/15 text-amber-800', adminBadge: 'bg-amber-500/20 text-amber-300', actionText: 'Download MP4 (Video)' };
+        }
+
+        function renderStudentTrainingVideos(student) {
+            const container = document.getElementById('student-videos-list');
+            if (!container || !student) return;
+
+            const cohortVideos = (appState.trainingVideos || []).filter(
+                v => !v.programId || v.programId === student.programId || v.programTitle === student.programTitle
+            );
+
+            if (!cohortVideos.length) {
+                container.innerHTML = `<div class="sm:col-span-2 p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center text-sm text-slate-500">No training files (Doc, PDF, MP3, MP4) have been uploaded for your cohort yet.</div>`;
+                return;
+            }
+
+            container.innerHTML = cohortVideos.map(v => {
+                const isAccessible = Boolean(v.downloadAccessible);
+                const meta = getStoredFileCategoryMeta(v.fileCategory);
+                const displayFileName = v.fileName || 'cohort_material';
+                return `
+                    <div class="p-5 rounded-2xl bg-slate-50 border ${isAccessible ? 'border-emerald-300' : 'border-amber-300'} space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-1">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${meta.studentBadge}">${meta.label}</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${v.programTitle || 'Training Cohort'}</span>
+                                </div>
+                                <h4 class="font-display font-bold text-base text-slate-900">${v.title || displayFileName}</h4>
+                                <p class="text-xs font-semibold text-slate-700 break-all">File Name: <span class="font-mono text-slate-600">${displayFileName}</span></p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase shrink-0 ${isAccessible ? 'bg-emerald-500/15 text-emerald-700' : 'bg-rose-500/15 text-rose-700'}">
+                                ${isAccessible ? 'Approved' : 'inaccessible'}
+                            </span>
+                        </div>
+                        ${isAccessible && v.videoData
+                            ? `<a href="${v.videoData}" download="${displayFileName}" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all">
+                                   <i data-lucide="download" class="w-4 h-4"></i>
+                                   <span>${meta.actionText} — ${displayFileName}</span>
+                               </a>`
+                            : `<div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between gap-2">
+                                   <span>Status: <strong>inaccessible</strong> (Awaiting Admin approval)</span>
+                                   <button type="button" disabled class="px-3 py-1.5 rounded-lg bg-slate-300 text-slate-600 font-bold text-[11px] cursor-not-allowed">inaccessible</button>
+                               </div>`}
+                    </div>
+                `;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
         }
 
         function switchStudentTab(tab) {
-            ['telegram', 'certificate', 'testimony', 'profile'].forEach(t => {
+            ['telegram', 'videos', 'certificate', 'testimony', 'profile'].forEach(t => {
                 const btn = document.getElementById(`stab-${t}`);
                 const panel = document.getElementById(`spanel-${t}`);
                 if (btn) btn.className = t === tab
@@ -2754,7 +2791,7 @@
         }
 
         function switchAdminTab(tab) {
-            ['registrations', 'programs', 'branding', 'testimonies', 'security'].forEach(t => {
+            ['registrations', 'videos', 'programs', 'branding', 'testimonies', 'security'].forEach(t => {
                 const btn = document.getElementById(`atab-${t}`);
                 const panel = document.getElementById(`apanel-${t}`);
                 if (btn) btn.className = t === tab
@@ -2772,8 +2809,178 @@
             document.getElementById('stat-total-testimonies').textContent = (appState.testimonies || []).length;
 
             renderAdminRegistrationsTable();
+            populateAdminVideoProgramDropdown();
+            renderAdminTrainingVideos();
             populateAdminSettingsForms();
             renderAdminTestimonies();
+        }
+
+        function populateAdminVideoProgramDropdown() {
+            const sel = document.getElementById('admin-video-program-select');
+            if (!sel) return;
+            sel.innerHTML = (appState.programs || []).map(p =>
+                `<option value="${p.id}">${p.title}</option>`
+            ).join('');
+        }
+
+        function readFileAsDataUrlWithProgress(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result || '');
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handleAdminTrainingVideoUpload(e) {
+            e.preventDefault();
+            const progId = document.getElementById('admin-video-program-select').value;
+            const batchLabel = document.getElementById('admin-video-title-input').value.trim();
+            const fileInput = document.getElementById('admin-video-file-input');
+            const allowImmediately = Boolean(document.getElementById('admin-video-allow-immediately').checked);
+            const files = fileInput && fileInput.files ? Array.from(fileInput.files) : [];
+
+            if (!files.length) {
+                showToast('Please select one or more files (Doc, PDF, MP3, MP4) to upload.', 'error');
+                return;
+            }
+
+            const oversized = files.find(f => f.size > 18 * 1024 * 1024);
+            if (oversized) {
+                showToast(`"${oversized.name}" exceeds 18MB. Please select files under 18MB each.`, 'error');
+                return;
+            }
+
+            const btn = document.getElementById('admin-video-upload-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = `Uploading ${files.length} File(s) & Delivering to Cohort...`;
+            }
+
+            try {
+                const prog = (appState.programs || []).find(p => p.id === progId) || appState.programs[0] || defaultState.programs[0];
+                const targetStudents = (appState.registrations || []).filter(
+                    r => r.programId === prog.id || r.programTitle === prog.title
+                );
+                const recipientIds = targetStudents.map(s => s.id);
+                const baseNow = Date.now();
+                const uploadedRecords = [];
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const catInfo = detectCohortFileCategory(file);
+                    const fileData = await readFileAsDataUrlWithProgress(file);
+                    const itemTitle = files.length === 1 && batchLabel
+                        ? batchLabel
+                        : (batchLabel ? `${batchLabel} — ${file.name}` : file.name);
+                    const recId = `MAT-${baseNow + i}-${Math.floor(100 + Math.random() * 900)}`;
+
+                    const record = {
+                        id: recId,
+                        programId: prog.id,
+                        programTitle: prog.title,
+                        title: itemTitle,
+                        fileName: file.name,
+                        fileCategory: catInfo.type,
+                        videoData: fileData,
+                        downloadAccessible: allowImmediately,
+                        deliveredStudentIds: recipientIds,
+                        createdAt: baseNow + i,
+                        updatedAt: baseNow + i
+                    };
+
+                    uploadedRecords.push(record);
+                    await syncSingleNodeToFirebase(`lhci_training_videos/${record.id}`, record);
+                }
+
+                appState.trainingVideos = [...uploadedRecords.reverse(), ...(appState.trainingVideos || [])];
+                saveStateLocal();
+
+                e.target.reset();
+                renderAdminTrainingVideos();
+                updateStudentAuthViews();
+                showToast(
+                    `${uploadedRecords.length} file(s) uploaded & delivered to ${recipientIds.length} student(s) (${allowImmediately ? 'Approved for Download' : 'Locked as inaccessible until Admin approves'}).`,
+                    'success'
+                );
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to process uploaded files. Please try again.', 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Upload Files & Deliver to Cohort';
+                }
+            }
+        }
+
+        function renderAdminTrainingVideos() {
+            const list = document.getElementById('admin-videos-list');
+            if (!list) return;
+            const vids = appState.trainingVideos || [];
+            if (!vids.length) {
+                list.innerHTML = `<div class="sm:col-span-2 p-6 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No cohort files (Doc, PDF, MP3, MP4) uploaded yet.</div>`;
+                return;
+            }
+
+            list.innerHTML = vids.map(v => {
+                const isAccessible = Boolean(v.downloadAccessible);
+                const count = (v.deliveredStudentIds || []).length;
+                const meta = getStoredFileCategoryMeta(v.fileCategory);
+                const displayFileName = v.fileName || 'cohort_file';
+                return `
+                    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col justify-between gap-3">
+                        <div>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${meta.adminBadge}">${meta.label}</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isAccessible ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}">
+                                        ${isAccessible ? 'Student Access Approved' : 'inaccessible (Pending Approval)'}
+                                    </span>
+                                </div>
+                                <span class="text-[11px] text-slate-400">Cohort Students: ${count}</span>
+                            </div>
+                            <h4 class="font-bold text-white text-sm mt-2">${v.title || displayFileName}</h4>
+                            <p class="text-[11px] text-amber-300 font-mono mt-0.5 break-all">File: ${displayFileName}</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">${v.programTitle || 'Training Cohort'}</p>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+                            <button type="button" onclick="toggleTrainingVideoAccess('${v.id}')" class="px-3.5 py-1.5 rounded-xl font-bold text-xs ${isAccessible ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'}">
+                                ${isAccessible ? 'Revoke Access (Set inaccessible)' : 'Approve Student Access'}
+                            </button>
+                            <button type="button" onclick="deleteTrainingVideo('${v.id}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function toggleTrainingVideoAccess(videoId) {
+            const vid = (appState.trainingVideos || []).find(v => v.id === videoId);
+            if (!vid) return;
+            vid.downloadAccessible = !vid.downloadAccessible;
+            vid.updatedAt = Date.now();
+            saveStateLocal();
+            await syncSingleNodeToFirebase(`lhci_training_videos/${vid.id}`, vid);
+            renderAdminTrainingVideos();
+            updateStudentAuthViews();
+            showToast(
+                vid.downloadAccessible
+                    ? `Student download access approved for "${vid.fileName || vid.title}".`
+                    : `"${vid.fileName || vid.title}" is now marked inaccessible for students.`,
+                vid.downloadAccessible ? 'success' : 'info'
+            );
+        }
+
+        async function deleteTrainingVideo(videoId) {
+            appState.trainingVideos = (appState.trainingVideos || []).filter(v => v.id !== videoId);
+            saveStateLocal();
+            await deleteSingleNodeFromFirebase(`lhci_training_videos/${videoId}`);
+            renderAdminTrainingVideos();
+            updateStudentAuthViews();
+            showToast('Training video removed.', 'info');
         }
 
         function renderAdminRegistrationsTable() {
