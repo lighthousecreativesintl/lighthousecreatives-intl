@@ -810,6 +810,10 @@
                                 <h3 class="font-display font-bold text-xl text-slate-900">Cohort Training Files & Media (Doc, PDF, MP3, MP4)</h3>
                                 <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Materials uploaded for your registered training are delivered to your cohort hub. Download links unlock once approved by the Administrator.</p>
                             </div>
+                            <button type="button" onclick="refreshStudentCohortFiles()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i>
+                                <span>Refresh Files</span>
+                            </button>
                         </div>
                         <div id="student-videos-list" class="grid sm:grid-cols-2 gap-4">
                             <!-- Rendered via JS -->
@@ -864,6 +868,13 @@
                     </div>
 
                     <!-- Student Tab 5: Update Profile & Password -->
+                    <div id="spanel-profile" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs max-w-xl space-y-5">
+                        <h3 class="font-display font-bold text-xl text-slate-900">Update Student Portal Password</h3>
+                        <form onsubmit="handleStudentPasswordUpdate(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-700 mb-1">New Password *</label>
+                                <input type="password" id="student-new-password" required minlength="4" placeholder="Enter new password" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
                             <button type="submit" class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm">
                                 Save New Password
                             </button>
@@ -1673,16 +1684,70 @@
         /* Granular Node Sync for 5,000+ Concurrent Users */
         async function syncSingleNodeToFirebase(path, payload) {
             const dbUrl = getActiveCloudDbUrl();
-            if (!dbUrl) return;
+            if (!dbUrl) return false;
             try {
-                await fetch(`${dbUrl}/${path}.json`, {
+                const res = await fetch(`${dbUrl}/${path}.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                if (!res.ok) {
+                    throw new Error(`Firebase HTTP ${res.status}`);
+                }
                 updateCloudSyncStatusUI(`Synced (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`, true);
+                return true;
             } catch (err) {
-                updateCloudSyncStatusUI('Offline / Retrying Sync', false);
+                console.error('Firebase sync failed:', path, err);
+                updateCloudSyncStatusUI('Sync Error — Check File Size / Network', false);
+                return false;
+            }
+        }
+
+        async function uploadCohortFileToFirebaseChunked(record) {
+            const dbUrl = getActiveCloudDbUrl();
+            if (!dbUrl) return false;
+            const rawData = record.videoData || '';
+            const CHUNK_SIZE = 1800000; // ~1.8MB per Firebase node to avoid payload limits
+            if (rawData.length <= CHUNK_SIZE) {
+                return await syncSingleNodeToFirebase(`lhci_training_videos/${record.id}`, record);
+            }
+
+            const totalChunks = Math.ceil(rawData.length / CHUNK_SIZE);
+            for (let c = 0; c < totalChunks; c++) {
+                const slice = rawData.slice(c * CHUNK_SIZE, (c + 1) * CHUNK_SIZE);
+                const chunkOk = await syncSingleNodeToFirebase(`lhci_training_video_chunks/${record.id}/${c}`, slice);
+                if (!chunkOk) return false;
+            }
+
+            const metaRecord = {
+                ...record,
+                videoData: '',
+                isChunked: true,
+                totalChunks
+            };
+            return await syncSingleNodeToFirebase(`lhci_training_videos/${record.id}`, metaRecord);
+        }
+
+        async function fetchChunkedCohortFileData(videoRecord) {
+            if (videoRecord.videoData) return videoRecord.videoData;
+            if (!videoRecord.isChunked || !videoRecord.totalChunks) return '';
+            const dbUrl = getActiveCloudDbUrl();
+            if (!dbUrl) return '';
+            try {
+                const parts = [];
+                for (let c = 0; c < videoRecord.totalChunks; c++) {
+                    const res = await fetch(`${dbUrl}/lhci_training_video_chunks/${videoRecord.id}/${c}.json`);
+                    if (!res.ok) throw new Error(`Chunk ${c} failed`);
+                    const chunkStr = await res.json();
+                    parts.push(chunkStr || '');
+                }
+                const fullData = parts.join('');
+                videoRecord.videoData = fullData;
+                saveStateLocal();
+                return fullData;
+            } catch (err) {
+                console.error('Failed to reassemble file chunks:', err);
+                return '';
             }
         }
 
@@ -1770,7 +1835,11 @@
                             if (!v || !v.id) return;
                             const prev = vidMap.get(v.id);
                             if (!prev || (v.updatedAt || 0) >= (prev.updatedAt || 0)) {
-                                vidMap.set(v.id, v);
+                                // Preserve already-downloaded local videoData if remote record is chunked metadata
+                                const mergedVid = (prev && prev.videoData && !v.videoData && v.isChunked)
+                                    ? { ...v, videoData: prev.videoData }
+                                    : v;
+                                vidMap.set(v.id, mergedVid);
                             }
                         });
                         appState.trainingVideos = Array.from(vidMap.values())
@@ -2405,7 +2474,7 @@
                 const dl = document.getElementById('student-cert-download-link');
                 if (dl) {
                     dl.href = validStudent.certificateData;
-                    dl.download = validStudent.certificateFileName || `${validStudent.fullName.replace(/\s+/g, '_')}_Certificate`;
+                    dl.download = validStudent.certificateFileName || `LHCI_Certificate_${validStudent.fullName.replace(/\s+/g, '_')}`;
                 }
             } else {
                 certPending.classList.remove('hidden');
@@ -2415,33 +2484,44 @@
             renderStudentTrainingVideos(validStudent);
         }
 
-        function detectCohortFileCategory(file) {
-            const name = (file?.name || '').toLowerCase();
-            const mime = (file?.type || '').toLowerCase();
-            if (name.endsWith('.pdf') || mime.includes('pdf')) {
-                return { type: 'PDF', badgeClass: 'bg-rose-500/15 text-rose-700', adminBadgeClass: 'bg-rose-500/20 text-rose-300' };
-            }
-            if (name.endsWith('.doc') || name.endsWith('.docx') || mime.includes('word') || mime.includes('document')) {
-                return { type: 'Doc', badgeClass: 'bg-blue-500/15 text-blue-700', adminBadgeClass: 'bg-blue-500/20 text-blue-300' };
-            }
-            if (name.endsWith('.mp3') || mime.includes('audio') || name.includes('mpeg')) {
-                return { type: 'MP3 (Audio)', badgeClass: 'bg-purple-500/15 text-purple-700', adminBadgeClass: 'bg-purple-500/20 text-purple-300' };
-            }
-            return { type: 'MP4 (Video)', badgeClass: 'bg-amber-500/15 text-amber-800', adminBadgeClass: 'bg-amber-500/20 text-amber-300' };
+        async function refreshStudentCohortFiles() {
+            showToast('Checking for latest cohort files...', 'info');
+            await pullStateFromCloud(true);
+            showToast('Cohort files list updated!', 'success');
         }
 
-        function getStoredFileCategoryMeta(categoryLabel) {
-            const cat = categoryLabel || 'MP4 (Video)';
-            if (cat === 'PDF') {
-                return { label: 'PDF', studentBadge: 'bg-rose-500/15 text-rose-700', adminBadge: 'bg-rose-500/20 text-rose-300', actionText: 'Download PDF' };
+        async function downloadStudentCohortFile(videoId) {
+            const vid = (appState.trainingVideos || []).find(v => v.id === videoId);
+            if (!vid || !vid.downloadAccessible) {
+                showToast('This file is currently inaccessible. Awaiting Admin approval.', 'error');
+                return;
             }
-            if (cat === 'Doc') {
-                return { label: 'Doc', studentBadge: 'bg-blue-500/15 text-blue-700', adminBadge: 'bg-blue-500/20 text-blue-300', actionText: 'Download Doc' };
+            const btn = document.getElementById(`student-dl-btn-${videoId}`);
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Preparing File Download...';
             }
-            if (cat.includes('MP3') || cat.includes('Audio')) {
-                return { label: 'MP3 (Audio)', studentBadge: 'bg-purple-500/15 text-purple-700', adminBadge: 'bg-purple-500/20 text-purple-300', actionText: 'Download MP3 (Audio)' };
+            try {
+                const dataUrl = await fetchChunkedCohortFileData(vid);
+                if (!dataUrl) {
+                    showToast('Unable to fetch file from cloud right now. Check connection and try again.', 'error');
+                    return;
+                }
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = vid.fileName || 'cohort_material';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                showToast(`Downloading ${vid.fileName || 'file'}...`, 'success');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                    if (window.lucide) lucide.createIcons();
+                }
             }
-            return { label: 'MP4 (Video)', studentBadge: 'bg-amber-500/15 text-amber-800', adminBadge: 'bg-amber-500/20 text-amber-300', actionText: 'Download MP4 (Video)' };
         }
 
         function renderStudentTrainingVideos(student) {
@@ -2459,6 +2539,7 @@
 
             container.innerHTML = cohortVideos.map(v => {
                 const isAccessible = Boolean(v.downloadAccessible);
+                const hasCloudPayload = Boolean(v.videoData || v.isChunked);
                 const meta = getStoredFileCategoryMeta(v.fileCategory);
                 const displayFileName = v.fileName || 'cohort_material';
                 return `
@@ -2476,11 +2557,11 @@
                                 ${isAccessible ? 'Approved' : 'inaccessible'}
                             </span>
                         </div>
-                        ${isAccessible && v.videoData
-                            ? `<a href="${v.videoData}" download="${displayFileName}" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all">
+                        ${isAccessible && hasCloudPayload
+                            ? `<button type="button" id="student-dl-btn-${v.id}" onclick="downloadStudentCohortFile('${v.id}')" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all">
                                    <i data-lucide="download" class="w-4 h-4"></i>
                                    <span>${meta.actionText} — ${displayFileName}</span>
-                               </a>`
+                               </button>`
                             : `<div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between gap-2">
                                    <span>Status: <strong>inaccessible</strong> (Awaiting Admin approval)</span>
                                    <button type="button" disabled class="px-3 py-1.5 rounded-lg bg-slate-300 text-slate-600 font-bold text-[11px] cursor-not-allowed">inaccessible</button>
@@ -2889,8 +2970,12 @@
                         updatedAt: baseNow + i
                     };
 
+                    const syncedOk = await uploadCohortFileToFirebaseChunked(record);
+                    if (!syncedOk) {
+                        showToast(`Cloud sync failed for "${file.name}". Check internet connection or use a smaller file.`, 'error');
+                        continue;
+                    }
                     uploadedRecords.push(record);
-                    await syncSingleNodeToFirebase(`lhci_training_videos/${record.id}`, record);
                 }
 
                 appState.trainingVideos = [...uploadedRecords.reverse(), ...(appState.trainingVideos || [])];
@@ -2899,10 +2984,12 @@
                 e.target.reset();
                 renderAdminTrainingVideos();
                 updateStudentAuthViews();
-                showToast(
-                    `${uploadedRecords.length} file(s) uploaded & delivered to ${recipientIds.length} student(s) (${allowImmediately ? 'Approved for Download' : 'Locked as inaccessible until Admin approves'}).`,
-                    'success'
-                );
+                if (uploadedRecords.length) {
+                    showToast(
+                        `${uploadedRecords.length} file(s) synced to cloud & delivered to ${recipientIds.length} student(s) (${allowImmediately ? 'Approved for Download' : 'Locked as inaccessible until Admin approves'}).`,
+                        'success'
+                    );
+                }
             } catch (err) {
                 console.error(err);
                 showToast('Failed to process uploaded files. Please try again.', 'error');
@@ -2941,14 +3028,14 @@
                                 <span class="text-[11px] text-slate-400">Cohort Students: ${count}</span>
                             </div>
                             <h4 class="font-bold text-white text-sm mt-2">${v.title || displayFileName}</h4>
-                            <p class="text-[11px] text-amber-300 font-mono mt-0.5 break-all">File: ${displayFileName}</p>
-                            <p class="text-[11px] text-slate-400 mt-0.5">${v.programTitle || 'Training Cohort'}</p>
+                            <p class="text-[11px] text-slate-300 mt-0.5 break-all">File Name: <span class="font-mono text-amber-300">${displayFileName}</span></p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">${v.programTitle || 'Flagship Training'}</p>
                         </div>
-                        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
-                            <button type="button" onclick="toggleTrainingVideoAccess('${v.id}')" class="px-3.5 py-1.5 rounded-xl font-bold text-xs ${isAccessible ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'}">
-                                ${isAccessible ? 'Revoke Access (Set inaccessible)' : 'Approve Student Access'}
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                            <button type="button" onclick="toggleTrainingVideoAccess('${v.id}')" class="px-3 py-1.5 rounded-lg ${isAccessible ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'} font-bold text-[11px]">
+                                ${isAccessible ? 'Revoke Access (Set inaccessible)' : 'Approve Student Download'}
                             </button>
-                            <button type="button" onclick="deleteTrainingVideo('${v.id}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs">
+                            <button type="button" onclick="deleteTrainingVideo('${v.id}')" class="px-2.5 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 font-bold text-[11px]">
                                 Delete
                             </button>
                         </div>
@@ -2963,24 +3050,75 @@
             vid.downloadAccessible = !vid.downloadAccessible;
             vid.updatedAt = Date.now();
             saveStateLocal();
-            await syncSingleNodeToFirebase(`lhci_training_videos/${vid.id}`, vid);
+            const metaPayload = vid.isChunked ? { ...vid, videoData: '' } : vid;
+            await syncSingleNodeToFirebase(`lhci_training_videos/${vid.id}`, metaPayload);
             renderAdminTrainingVideos();
             updateStudentAuthViews();
             showToast(
                 vid.downloadAccessible
-                    ? `Student download access approved for "${vid.fileName || vid.title}".`
-                    : `"${vid.fileName || vid.title}" is now marked inaccessible for students.`,
+                    ? `"${vid.fileName || vid.title}" is now APPROVED for student download across all phones!`
+                    : `"${vid.fileName || vid.title}" is now locked as "inaccessible".`,
                 vid.downloadAccessible ? 'success' : 'info'
             );
+        }
+
+        function detectCohortFileCategory(file) {
+            const name = (file && file.name ? file.name : '').toLowerCase();
+            const mime = (file && file.type ? file.type : '').toLowerCase();
+            if (name.endsWith('.pdf') || mime === 'application/pdf') {
+                return { type: 'PDF', label: 'PDF Document' };
+            }
+            if (name.endsWith('.doc') || name.endsWith('.docx') || mime.includes('word') || mime.includes('msword')) {
+                return { type: 'DOC', label: 'Word Doc' };
+            }
+            if (name.endsWith('.mp3') || mime.startsWith('audio/')) {
+                return { type: 'MP3', label: 'MP3 (Audio)' };
+            }
+            return { type: 'MP4', label: 'MP4 (Video)' };
+        }
+
+        function getStoredFileCategoryMeta(category) {
+            const cat = (category || 'MP4').toUpperCase();
+            if (cat === 'PDF') {
+                return {
+                    label: 'PDF',
+                    adminBadge: 'bg-rose-500/20 text-rose-300',
+                    studentBadge: 'bg-rose-500/15 text-rose-700',
+                    actionText: 'Download PDF'
+                };
+            }
+            if (cat === 'DOC') {
+                return {
+                    label: 'Doc',
+                    adminBadge: 'bg-blue-500/20 text-blue-300',
+                    studentBadge: 'bg-blue-500/15 text-blue-700',
+                    actionText: 'Download Doc'
+                };
+            }
+            if (cat === 'MP3') {
+                return {
+                    label: 'MP3 (Audio)',
+                    adminBadge: 'bg-purple-500/20 text-purple-300',
+                    studentBadge: 'bg-purple-500/15 text-purple-700',
+                    actionText: 'Download MP3 Audio'
+                };
+            }
+            return {
+                label: 'MP4 (Video)',
+                adminBadge: 'bg-sky-500/20 text-sky-300',
+                studentBadge: 'bg-sky-500/15 text-sky-700',
+                actionText: 'Download MP4 Video'
+            };
         }
 
         async function deleteTrainingVideo(videoId) {
             appState.trainingVideos = (appState.trainingVideos || []).filter(v => v.id !== videoId);
             saveStateLocal();
             await deleteSingleNodeFromFirebase(`lhci_training_videos/${videoId}`);
+            await deleteSingleNodeFromFirebase(`lhci_training_video_chunks/${videoId}`);
             renderAdminTrainingVideos();
             updateStudentAuthViews();
-            showToast('Training video removed.', 'info');
+            showToast('Training file removed from cloud and portal.', 'info');
         }
 
         function renderAdminRegistrationsTable() {
